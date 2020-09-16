@@ -81,7 +81,6 @@ class StartUpConfig():
 		self.video_panel.pack(side = "top", fill = "both", expand = "yes")
 		
 		self.video_device_count = self.GetVideoDeviceCount()
-		#~self.video_device_count = 0
 		
 		self.camera_id = tk.IntVar(self.window)
 		self.label_cameras = tk.Label(self.video_config_frame, text="Video device ID:", anchor = tk.CENTER, font = ("Arial", 12, 'bold'))
