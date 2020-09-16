@@ -1,5 +1,5 @@
-Cold Stage 4 - PRERELEASE 1
----------------------------
+Cold Stage 4 - PRE-RELEASE 1
+----------------------------
 
 A software program for the control of a solid-state experimental temperature control platform.
 
