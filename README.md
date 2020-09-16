@@ -12,7 +12,7 @@ General:
 * Add user to linux users group 'dialout' to give full access to usb serial port
 
 Python:
-* Install Anaconda Python 3 (>= 3.8.5) - this will come with all the popular Python modules.
+* Install Anaconda Python 3 (>= 3.8.5) - this will come with all the popular Python modules (
 
 Further to this you will need:
 * pyserial (conda install pyserial)
@@ -25,7 +25,7 @@ To Run Cold Stage 4:
 --------------------
 
 In the program directory, enter ipython ColdStage.py at the command line. If no physical instrument is connected you can select the 'simulation_test_device'
-from the device option menu to have a play.
+from the device option menu to have a play. If you have a webcam connected (or built-in) you it should detect it. If not, you can run the software without.
 
 
 Licence:
