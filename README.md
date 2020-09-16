@@ -8,17 +8,17 @@ Installation instructions:
 --------------------------
 
 General:
-* Install linux package v4l-utils
+* Install linux package v4l-utils (>=1.12.3-1)
 * Add user to linux users group 'dialout' to give full access to usb serial port
 
 Python:
-* Install Anaconda Python 3 (>= 3.8.5) - this will come with all the popular Python modules (
+* Install Anaconda Python 3 (>= 3.8.5) - this will come with all the popular Python modules.
 
 Further to this you will need:
-* pyserial (conda install pyserial)
-* opencv   (conda install -c conda-forge opencv)
-* pillow   (conda install -c anaconda pillow)
-* crcmod   (conda install -c conda-force crcmod)
+* pyserial >=3.4 (conda install pyserial)
+* opencv >=4.4.0   (conda install -c conda-forge opencv)
+* pillow >=7.2.0  (conda install -c anaconda pillow)
+* crcmod >=1.7  (conda install -c conda-forge crcmod)
 
 
 To Run Cold Stage 4:
