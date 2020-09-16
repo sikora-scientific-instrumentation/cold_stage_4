@@ -81,13 +81,29 @@ class StartUpConfig():
 		self.video_panel.pack(side = "top", fill = "both", expand = "yes")
 		
 		self.video_device_count = self.GetVideoDeviceCount()
+		#~self.video_device_count = 0
 		
 		self.camera_id = tk.IntVar(self.window)
 		self.label_cameras = tk.Label(self.video_config_frame, text="Video device ID:", anchor = tk.CENTER, font = ("Arial", 12, 'bold'))
 		self.label_cameras.pack(side="top", expand="true", fill = tk.BOTH)
-		self.spinbox = tk.Spinbox(self.video_config_frame, from_=0, to_=self.video_device_count-1, textvariable = self.camera_id)
+		
+		upper_index = self.video_device_count-1
+		if upper_index < 0:
+			upper_index = 0
+		
+		self.spinbox = tk.Spinbox(self.video_config_frame, from_=0, to_=upper_index, textvariable = self.camera_id)
 		self.spinbox.pack(side = "top", expand = "true", fill = tk.BOTH)
 		self.camera_id.trace("w", self.VideoCallBack)
+		self.video_disabled_flag = tk.BooleanVar(self.window)
+		self.checkButton_video_disabled = tk.Checkbutton(self.video_config_frame, text = "Disable video", variable = self.video_disabled_flag, onvalue = True, offvalue = False)
+		self.checkButton_video_disabled.pack(side = "top", expand = "true", fill = tk.BOTH)
+		
+		if self.video_device_count == 0:
+			self.video_disabled_flag.set(True)
+			self.checkButton_video_disabled.configure(state = DISABLED)
+		else:
+			self.video_disabled_flag.set(False)
+			self.checkButton_video_disabled.configure(state = NORMAL)
 		
 		self.button_start = tk.Button(self.buttons_frame, text="Start", command=self.Start)
 		self.button_start.pack(side = "top", expand = "true", fill = tk.BOTH)

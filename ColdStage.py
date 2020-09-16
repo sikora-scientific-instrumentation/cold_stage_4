@@ -90,8 +90,11 @@ class CoolerControl():
 		self.comms_port = self.start_up_config.device_port.get()
 		self.num_channels = self.start_up_config.device_number_of_channels.get()
 		self.video_device_id = [int(self.start_up_config.camera_id.get()), 0, 0, 0]
+		self.video_enabled = [not bool(self.start_up_config.video_disabled_flag.get()), 0, 0, 0]
 		self.timing_flag = self.device_parameter_defaults['timing_info_flag']
 		self.time_step = self.device_parameter_defaults['time_step']
+		self.plotting_enabled = self.device_parameter_defaults['enable_plotting_flag']
+		self.drive_mode = self.device_parameter_defaults['drive_mode']
 		self.action = self.start_up_config.action.get()
 		
 		if self.num_channels < 1:
@@ -102,12 +105,6 @@ class CoolerControl():
 		self.simulation_flag = (self.comms_port == 'none')
 		
 		if self.action == 'start':
-			# Generate the channel configuration window and once it is closed, read the settings from the
-			# tkinter variables there created.
-			self.video_enabled = self.device_parameter_defaults['enable_video_flag']
-			self.plotting_enabled = self.device_parameter_defaults['enable_plotting_flag']
-			self.drive_mode = self.device_parameter_defaults['drive_mode']
-			
 			# Create a root tkinter window, and then hide it.
 			self.root_tk = tk.Tk()
 			self.root_tk.withdraw()
