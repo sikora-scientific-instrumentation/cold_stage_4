@@ -67,7 +67,7 @@ class CoolerControl():
 			'log_video_split_flag' : [0, 0, 0, 0],
 			#	Control
 			'drive_mode' : [2, 2, 2, 2],
-			'pid_coefficients': [{'P' : 2.0, 'I': 0.0, 'D': 5.0}, {'P' : 1.0, 'I': 1.0, 'D': 1.0}, {'P' : 1.0, 'I': 1.0, 'D': 1.0}, {'P' : 1.0, 'I': 1.0, 'D': 1.0}],
+			'pid_coefficients': [{'P' : 0.4, 'I': 0.0, 'D': 2.1}, {'P' : 0.4, 'I': 0.0, 'D': 2.1}, {'P' : 0.4, 'I': 0.0, 'D': 2.1}, {'P' : 0.4, 'I': 0.0, 'D': 2.1}],
 			'max_temperature_limit': [40.0, 40.0, 40.0, 40.0],
 			'min_temperature_limit': [-40.0, -40.0, -40.0, -40.0],
 			'overload_fault_threshold_seconds': 10.0,
