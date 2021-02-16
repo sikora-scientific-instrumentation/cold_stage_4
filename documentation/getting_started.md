@@ -86,7 +86,7 @@ Note that the button in the bottom-right corner of the wizard window now reads '
 
 ### v. Running the drop-assay:
 
-![Fig.7](images/5_drop_assay_wizard_4_wizard_running.png)
+![Fig.7](images/5_drop_assay_wizard_4_assay_running.png)
 
 Once the user has clicked 'Start Assay', the cold-stage will start the data logger, before cooling the cold-plate to the ramp start temperature as rapidly as possible. 
 
