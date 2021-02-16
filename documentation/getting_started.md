@@ -2,15 +2,13 @@
 
 ## How to have a play with the cold-stage control software using 'simulation mode'.
 
----
-
 ## 1. Starting the control software:
 
 ![Fig.1 - Terminal at startup](images/1_terminal_at_startup.png "Fig.1 - Terminal at startup") 
 
 To start the control software by entering ColdStage.py at the command line when in the program directory. 
 
-The control software will attempt to initialise any physical cold-stages that are connected to the system, and attempt to initialise the web-cam if one is connected, before opening the device selection window (see Fig.1).
+The control software will attempt to initialise any physical cold-stages that are connected to the system, and attempt to initialise the web-cam if one is connected, before opening the device selection window as shown in Fig.1 above.
 
 On Linux systems, several 'virtual' COM ports exist even when no physical serial devices are connected, and for this reason the software will report that it was unable to connect to the device connected to those ports (see Fig.1). This is expected behaviour. The penultimate row in the terminal shows the software acknowledge the virtual 'simulation_test_device', ID 0, which allows the user to interact with a virtual simulated cold-stage. The final row in the terminal output shows a message from the web-cam driver software, and is normal and expected behaviour.
 
@@ -36,7 +34,7 @@ Now click 'Start' to start the control-software control panel.
 
 ![Fig.3 - Main control panel](images/3_control_panel_main.png "Fig.3 - Main control panel")
 
-The main control-panel will open and appear and appear as in Fig.3. On the left are the controls, and on the right is the temperature time-series plot.
+The main control-panel will open and appear and appear as in Fig.3 above. On the left are the controls, and on the right is the temperature time-series plot.
 
 The main readouts are in the top-left of the control panel. In red at the top is the most recent primary temperature reading (deg C). Under this are the most recent secondary temperature reading (deg C), cooling loop flow rate (litres/minute), the mode indicator and the logging indicator.
 
@@ -46,7 +44,7 @@ To explore the prompted drop-assay, ensure the 'Automatic' tab is selected, and 
 
 ![Fig.4 - Manually adjusting the plot span](images/4_manual_control_plot_span.png "Fig.4 - Manually adjusting the plot span")
 
-The 'Manual' tab contains a selection of sub-tabs which contain the full manual controls for the cold-stage. Of particular relevance when exploring the prompted drop-assay is the 'Plotting' tab (Fig.4). On this, the x-axis span (in datapoints, which by default are recorded at 5 Hz.) can be adjusted by changing the numeric entry field and clicking 'Apply plot span'.
+The 'Manual' tab contains a selection of sub-tabs which contain the full manual controls for the cold-stage. Of particular relevance when exploring the prompted drop-assay is the 'Plotting' tab, shown in Fig.4 above. On this, the x-axis span (in datapoints, which by default are recorded at 5 Hz.) can be adjusted by changing the numeric entry field and clicking 'Apply plot span'.
 
 ---
 
@@ -58,7 +56,7 @@ Briefly, a to run a droplet-freezing assay the user needs to configure the cold-
 
 The prompted drop-assay wizard asks the user to configure each of these in turn, then holds the cold-plate at room temperature while the user prepares their droplets on the cold-stage, although when using 'simulation mode' no pysical experiment is prepared or performed.
 
-The wizard window is split vertically into two halves (Fig. 5), showing the numbered steps comprising a prompted drop-assay on the left and any corresponding instructions, numerical entry fields, buttons or other controls on the right. The numerical entry fields will always contain a sensible default entry.
+The wizard window is split vertically into two halves as shown in Fig. 5 below, showing the numbered steps comprising a prompted drop-assay on the left and any corresponding instructions, numerical entry fields, buttons or other controls on the right. The numerical entry fields will always contain a sensible default entry.
 
 The two main buttons are in the window lower-right. These can change function depending on context, but during most of a prompted drop assay comprise; Abort - which will cancel the current drop-assay and close the wizard window, and Next which will advance the wizard to the next step.
 
@@ -66,13 +64,13 @@ The two main buttons are in the window lower-right. These can change function de
 
 ![Fig.5 - Propmpted drop-assay wizard 1: Room temperature](images/5_drop_assay_wizard_1.png "Fig.5 - Propmpted drop-assay wizard 1: Room temperature")
 
-Set the current laboratory room temperature by entering a temperature (in deg C) in the numeric entry field on the right [Fig.4], then click Next.
+Set the current laboratory room temperature by entering a temperature (in deg C) in the numeric entry field on the right as shown in Fig.4 above, then click Next.
 
 ### ii. Configuring the drop-assay ramp parameters:
 
 ![Fig.6 - Propmpted drop-assay wizard 2: Ramp parameters](images/6_drop_assay_wizard_2.png "Fig.6 - Propmpted drop-assay wizard 2: Ramp parameters")
 
-The three principal parameters involved in a droplet-freezing assay are the ramp parameters - that is - the start temperature, and temperature and temperature ramp rate. Enter these in the numeric entry fields on the right of the wizard window (Fig.7).
+The three principal parameters involved in a droplet-freezing assay are the ramp parameters - that is - the start temperature, and temperature and temperature ramp rate. Enter these in the numeric entry fields on the right of the wizard window as shown in Fig.6 above.
 
 The ramp start and end temperatures must be entered in degrees C. The temperature ramp rate can be entered in either degrees C per second, or degrees C per minute.
 
@@ -100,7 +98,7 @@ Note that the button in the bottom-right corner of the wizard window now reads '
 
 Once the user has clicked 'Start Assay', the cold-stage will start the data logger, before cooling the cold-plate to the ramp start temperature as rapidly as possible. 
 
-Once the cold-plate temperature reaches the ramp start temperature, the temperature setpoint will then advance linearly at the desired temperature ramp-rate, which can be observed in the main control-panel window (Fig.7).
+Once the cold-plate temperature reaches the ramp start temperature, the temperature setpoint will then advance linearly at the desired temperature ramp-rate, which can be observed in the main control-panel window as shown in Fig.8 above.
 
 Note that the button in the bottom-right corner of the wizard window now reads 'Finish Assay'. During a live experiment, in the event that all of the droplets in the array freeze prior to the cold-plate reaching the ramp end temperature, the user can click on this button to end the experiment. Otherwise, the experiment will end automatically once the cold-plate reaches the ramp end temperature.
 
