@@ -34,7 +34,7 @@ Now click 'Start' to start the control-software control panel.
 
 ## 3. Main control panel:
 
-![Fig.3 - Main control panel](images/4_control_panel_main.png "Fig.3 - Main control panel")
+![Fig.3 - Main control panel](images/3_control_panel_main.png "Fig.3 - Main control panel")
 
 The main control-panel will open and appear and appear as in Fig.3. On the left are the controls, and on the right is the temperature time-series plot.
 
@@ -44,7 +44,7 @@ Under the main readouts are the control tabs, split into two categories; 'Automa
 
 To explore the prompted drop-assay, ensure the 'Automatic' tab is selected, and then click the 'Drop Assay' button (Fig.3).
 
-![Fig.4 - Manually adjusting the plot span](images/4_manual_plot_span.png "Fig.4 - Manually adjusting the plot span")
+![Fig.4 - Manually adjusting the plot span](images/4_manual_control_plot_span.png "Fig.4 - Manually adjusting the plot span")
 
 The 'Manual' tab contains a selection of sub-tabs which contain the full manual controls for the cold-stage. Of particular relevance when exploring the prompted drop-assay is the 'Plotting' tab (Fig.4). On this, the x-axis span (in datapoints, which by default are recorded at 5 Hz.) can be adjusted by changing the numeric entry field and clicking 'Apply plot span'.
 
