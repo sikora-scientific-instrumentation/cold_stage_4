@@ -198,7 +198,9 @@ class CoolerChannel():
 									self.mq_back_to_front.put((2, 'Video_fault'))
 							else:
 								log_file_video_fault_flag = ', VIDEO_FAULT'
-						self.mq_back_to_logger.put((str(round(self.current_time - self.logging_start_time, 3)) + ', ' + str(self.logging_counter) + ', ' + str(sp) + ', ' + str(round(self.temperature, 3)) + ', ' + str(round(self.PRT_temperature, 3)) + ', ' + str(round(self.flow_rate, 3)) + log_file_video_fault_flag))
+						else:
+							log_file_video_fault_flag = ', VIDEO_DISABLED'
+						self.mq_back_to_logger.put((str(round(self.current_time - self.logging_start_time, 3)) + ', ' + str(self.logging_counter) + ', ' + str(sp) + ', ' + str(round(self.temperature, 3)) + ', ' + str(round(self.PRT_temperature, 3)) + ', ' + str(round(self.flow_rate, 3)) + ', ' + log_file_video_fault_flag))
 						self.logging_sub_counter = 1
 						self.logging_counter += 1
 					else:

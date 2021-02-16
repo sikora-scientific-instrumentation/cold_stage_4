@@ -34,18 +34,25 @@ import numpy as np
 import csv
 
 class CalibrationWidget():
-	def __init__ (self, parent, channel_id, root_tk, device_parameter_defaults, mq_front_to_back, event_back_to_front):
+	def __init__ (self, parent, channel_id, comms_unique_id, root_tk, device_parameter_defaults, mq_front_to_back, event_back_to_front):
 		self.device_parameter_defaults = device_parameter_defaults
 		self.parent = parent
 		self.channel_id = channel_id
+		self.comms_unique_id = comms_unique_id
 		self.mq_front_to_back = mq_front_to_back
 		self.event_back_to_front = event_back_to_front
 		self.root_tk = root_tk
-		self.calibration_fit_polynomial_order = self.device_parameter_defaults['calibration_fit_polynomial_order']
+		
+		if str(self.comms_unique_id) == '0':
+			self.type_identifier = '0'
+		else:
+			self.type_identifier = str(self.comms_unique_id)[0:2]
+		print("TYPE", self.type_identifier)
+		self.calibration_fit_polynomial_order = self.device_parameter_defaults['calibration_fit_polynomial_order'][self.type_identifier]
 		self.tc_calibration_temp_data_filepath = self.device_parameter_defaults['tc_calibration_temp_data_filepath'][self.channel_id]
 		self.tc_calibration_final_data_filepath = self.device_parameter_defaults['tc_calibration_final_data_filepath'][self.channel_id]
 		self.tc_calibration_coeffs_filepath = self.device_parameter_defaults['tc_calibration_coeffs_filepath'][self.channel_id]
-		self.tc_calibration_ramp_profile_filepath = self.device_parameter_defaults['tc_calibration_ramp_profile_filepath']
+		self.tc_calibration_ramp_profile_filepath = self.device_parameter_defaults['tc_calibration_ramp_profile_filepath'][self.type_identifier]
 		self.cancelled_flag = False
 		self.window_open_flag = False
 		
@@ -144,25 +151,29 @@ class CalibrationWidget():
 		# calibration coefficients file, write the new one then re-load the coefficients...
 		
 		# Get indices of last 60 rows for each setpoint...
-		setpoints_started_flag = False
+		setpoint_row_flag = False
 		sampling_ranges = []
 		tc_averages = []
 		prt_averages = []
 		with open(self.tc_calibration_temp_data_filepath, 'r') as csvfile:
 			reader = csv.reader(csvfile, delimiter=',', quotechar='|')
-			for i, row in enumerate(reader):
-				if i == 0:
+			row_index = 0
+			for row_index, row in enumerate(reader):
+				if row_index == 0:
 					continue
-				elif i > 0:
+				elif row_index > 0:
 					if row[2] == 'NA':
+						setpoint_row_flag = False
 						continue
-					elif (row[2] != 'NA') and (setpoints_started_flag == False):
+					elif (row[2] != 'NA') and (setpoint_row_flag == False):
 						last_setpoint = row[2]
-						setpoints_started_flag = True
-					elif (row[2] != 'NA') and (setpoints_started_flag == True):
+						setpoint_row_flag = True
+					elif (row[2] != 'NA') and (setpoint_row_flag == True):
 						if row[2] != last_setpoint:
-							sampling_ranges.append([i - 60, i])
+							sampling_ranges.append([row_index - 60, row_index])
 							last_setpoint = row[2]
+			if setpoint_row_flag == True:
+				sampling_ranges.append([row_index - 60, row_index])
 			
 		# Get averages of each of these sampling ranges, for both tc and prt.
 		with open(self.tc_calibration_temp_data_filepath, 'r') as csvfile:

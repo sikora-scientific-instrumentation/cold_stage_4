@@ -44,11 +44,12 @@ import CalibrationWidget
 import DropAssayWidget
 
 class FrontEnd():
-	def __init__ (self, parent, root_tk, device_parameter_defaults, num_channels, channel_id, close_action, mq_front_to_back, mq_back_to_front, mq_vlogger_to_front, event_back_to_front, timing_flag, timing_monitor, timing_monitor_kill, mq_timestamp, time_step, video_enabled, plotting_enabled):
+	def __init__ (self, parent, root_tk, device_parameter_defaults, num_channels, channel_id, comms_unique_id, close_action, mq_front_to_back, mq_back_to_front, mq_vlogger_to_front, event_back_to_front, timing_flag, timing_monitor, timing_monitor_kill, mq_timestamp, time_step, video_enabled, plotting_enabled):
 		self.parent = parent
 		self.device_parameter_defaults = device_parameter_defaults
 		self.num_channels = num_channels
 		self.channel_id = channel_id
+		self.comms_unique_id = comms_unique_id
 		self.close_action = close_action
 		
 		self.mq_front_to_back = mq_front_to_back
@@ -94,7 +95,7 @@ class FrontEnd():
 		self.GenerateTKWindow()
 		if self.video_enabled:
 			self.GenerateTKVideoWindow()
-		self.calibration_widget = CalibrationWidget.CalibrationWidget(self, self.channel_id, self.root_tk, self.device_parameter_defaults, self.mq_front_to_back, self.event_back_to_front)
+		self.calibration_widget = CalibrationWidget.CalibrationWidget(self, self.channel_id, self.comms_unique_id, self.root_tk, self.device_parameter_defaults, self.mq_front_to_back, self.event_back_to_front)
 		self.drop_assay_widget = DropAssayWidget.DropAssayWidget(self, self.channel_id, self.root_tk, self.device_parameter_defaults, self.mq_front_to_back, self.event_back_to_front)
 		
 		# Run UpdatePoll to begin checking for messages from the backend process.
@@ -134,8 +135,9 @@ class FrontEnd():
 					else:
 						self.label_current_PRT_temp_reading.configure(foreground = "blue")
 				elif most_recent_message[1] == 'Current_setpoint':
-					self.setpoint_times.append((most_recent_message[2] - self.datum_time))
-					self.setpoint_temperatures.append(most_recent_message[3])
+					if most_recent_message[3] != 'NA':
+						self.setpoint_times.append((most_recent_message[2] - self.datum_time))
+						self.setpoint_temperatures.append(most_recent_message[3])
 				elif most_recent_message[1] == 'Current_flowrate':
 					current_flowrate = round(float(most_recent_message[3]), 3)
 					self.label_current_flowrate_reading.configure(text = str(current_flowrate))
@@ -470,7 +472,9 @@ class FrontEnd():
 		if len(self.temperatures[range_start:]) > 1:
 			max_val = 0.0
 			min_val = 0.0
-			if self.setpoint_times:
+			#~print(self.temperatures[range_start:])
+			#~print(self.setpoint_temperatures[range_start:])
+			if len(self.setpoint_times)>0:
 				min_val = min(min(self.temperatures[range_start:]), min(self.setpoint_temperatures[range_start:]))
 				max_val = max(max(self.temperatures[range_start:]), max(self.setpoint_temperatures[range_start:]))
 			else:

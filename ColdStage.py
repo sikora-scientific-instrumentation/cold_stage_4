@@ -49,7 +49,6 @@ class CoolerControl():
 			'comms_baud_rate': 57600,
 			'timing_info_flag' : 0,
 			'time_step' : 0.2,
-			'calibration_fit_polynomial_order' : 5,
 			# Channel defaults.
 			#	Logging
 			'stop_logging_at_profile_end_flag' : [1, 1, 1, 1],
@@ -74,11 +73,12 @@ class CoolerControl():
 			#	Calibration:
 			'tc_calibration_time_step': 0.2,
 			'tc_calibration_logging_rate': 5,
+			'calibration_fit_polynomial_order' : {'0': 5, '30': 7, '52': 7},
 			'prt_calibration_coeffs_filepath' : ['./calibrations/channel_' + str(i) + '/prt_calibration_coeffs.csv' for i in range(4)],
 			'tc_calibration_temp_data_filepath': ['./calibrations/channel_' + str(i) + '/tc_calibration_log_data_TEMP.csv' for i in range(4)],
 			'tc_calibration_final_data_filepath': ['./calibrations/channel_' + str(i) + '/tc_calibration_log_data.csv' for i in range(4)],
 			'tc_calibration_coeffs_filepath' : ['./calibrations/channel_' + str(i) + '/tc_calibration_coeffs.csv' for i in range(4)],
-			'tc_calibration_ramp_profile_filepath': './calibrations/tc_calibration_ramp_profile.csv',
+			'tc_calibration_ramp_profile_filepath': {'0': './calibrations/simulation_calibration_ramp.csv', '30': './calibrations/30mm_calibration_ramp.csv', '52': './calibrations/52mm_calibration_ramp.csv'},
 			#	Ramping
 			'path_to_ramp_profile' : ["./ramp_profile.csv" for i in range(4)],
 			'ramp_repeats' : [1, 1, 1, 1]
@@ -135,7 +135,7 @@ class CoolerControl():
 			# Create instance(s) of the front end object and create a Tkinter variable that it can set when it/they close(s).
 			# These will be polled to determine when all front end windows are closed so we can end the root window mainloop().
 			self.close_action = [tk.StringVar(self.root_tk) for i in range(self.num_channels)]
-			self.front_ends = [FrontEnd.FrontEnd(self, self.root_tk, self.device_parameter_defaults, self.num_channels, i, self.close_action[i], self.mq_front_to_back[i], self.mq_back_to_front[i], self.mq_vlogger_to_front[i], self.event_back_to_front[i], self.timing_flag, self.timing_monitor[i], self.timing_monitor_kill[i], self.mq_timestamp[i], self.time_step, self.video_enabled[i], self.plotting_enabled[i]) for i in range(self.num_channels)]
+			self.front_ends = [FrontEnd.FrontEnd(self, self.root_tk, self.device_parameter_defaults, self.num_channels, i, self.comms_unique_id, self.close_action[i], self.mq_front_to_back[i], self.mq_back_to_front[i], self.mq_vlogger_to_front[i], self.event_back_to_front[i], self.timing_flag, self.timing_monitor[i], self.timing_monitor_kill[i], self.mq_timestamp[i], self.time_step, self.video_enabled[i], self.plotting_enabled[i]) for i in range(self.num_channels)]
 			
 			# Setup a process to run the back end. Pass Queue()s, Event()s etc to allow inter-process communication.
 			self.process_back_end = Process(target = BackEnd.BackEnd, args = (self.device_parameter_defaults, self.num_channels, self.mq_front_to_back, self.mq_back_to_front, self.mq_back_to_vlogger, self.mq_timestamp, self.event_vlogger_fault, self.event_back_to_front, self.video_enabled, self.comms_unique_id, self.time_step, self.timing_flag, self.drive_mode))
