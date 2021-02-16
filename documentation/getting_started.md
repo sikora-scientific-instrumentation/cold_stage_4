@@ -96,6 +96,12 @@ Note that the button in the bottom-right corner of the wizard window now reads '
 
 ### vi. Running multiple drop-assays.
 
+![Fig.8](images/5_drop_assay_wizard_4_assay_complete.png)
 
+If the user wishes to run multiple droplet-freezing assays in succession, once the current assay is complete click 'Next Assay' in the bottom right corner of the wizard window. This will return the wizard to step (ii). 
+
+Alternatively, click 'Abort' to leave the prompted drop-assay wizard.
+
+If the user wishes to change the configured room temperature, click 'Abort' and then re-start the prompted drop-assay wizard.
 
 
