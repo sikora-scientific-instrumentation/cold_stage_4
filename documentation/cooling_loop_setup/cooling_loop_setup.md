@@ -6,7 +6,7 @@
 
 Operation of the solid-state cold-stage requires a continuous supply of coolant media held at ~ +5 deg C. This coolant media acts as a heat source/sink that supplies heat to- or removes heat rejected by the peltier thermoelectric element that forms the active heat-pump within the cold-stage. 
 
-![Fig.1 - Basic system configuration](images/.png "Fig.1 - Basic system configuration")
+![Fig.1 - Minimal system configuration](images/1_barebones_single_coldstage.png "Fig.1 - Minimal system configuration")
 
 It is recommended that a laboratory recirculating chiller system is used for this purpose, connected to the cold-stage in a closed-loop as shown in it's simplest form in Fig. 1. 
 
@@ -45,19 +45,37 @@ A coolant flow-rate of ~
 
 ### i. Single cold-stage:
 
+![Fig.3 - Single cold-stage](images/2_recommended_single_coldstage.png "Fig.3 - Single cold-stage recommended configuration")
+
 Blah...
 
 ### ii. Two cold-stages:
+
+![Fig.4 - Two cold-stages](images/3_recommended_twin_coldstages.png "Fig.4 - Recommended configuration for two cold-stages")
 
 Blah...
 
 ### iii. Multiple cold-stages:
 
+![Fig.5 - Multiple cold-stages](images/4_recommended_n_coldstages.png "Fig.5 - Recommended configuration for multiple cold-stages")
+
 Blah...
 
 ---
 
-## 4. Care tips:
+## 4. Coolant loop priming guide:
+
+![Fig.6 - Priming cold-stage 1](images/5_twin_coldstages_priming_1.png "Fig.6 - Priming cold-stage 1")
+
+Blah...
+
+![Fig.7 - Priming cold-stage 2](images/5_twin_coldstages_priming_2.png "Fig.7 - Priming cold-stage 2")
+
+Blah...
+
+---
+
+## 5. Care tips:
 
 Blah...
 
