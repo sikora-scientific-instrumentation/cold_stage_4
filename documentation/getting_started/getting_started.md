@@ -1,5 +1,10 @@
 # Getting started with the cold-stage control software
 
+Author: Seb Sikora, March 2021.
+
+Last modified:  Seb Sikora, March 2021.
+
+
 ## How to have a play with the cold-stage control software using 'simulation mode'.
 
 ## 1. Starting the control software:

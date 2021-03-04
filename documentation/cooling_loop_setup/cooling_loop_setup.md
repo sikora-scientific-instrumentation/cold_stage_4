@@ -1,5 +1,9 @@
 # Cooling-loop setup guidelines
 
+Author: Seb Sikora, March 2021.
+
+Last modified:  Seb Sikora, March 2021.
+
 ## Instructions for setting-up the cold-stage recirculating cooling-loop.
 
 ## 1. Introduction:
