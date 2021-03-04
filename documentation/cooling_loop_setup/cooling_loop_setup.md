@@ -22,20 +22,26 @@ As a guideline, the coolant media must have a freezing point below the coldest p
 
 ### ii. Fluid couplers:
 
-![Fig.2 - Locking in-line coupling insert](images/.png "Fig.2 - Locking in-line coupling insert")
+![Fig.2 - Cold-stage fluid couplers](images/cold-stage_fluid_couplers.png "Fig.2 - Cold-stage fluid couplers")
 
 Locking panel-mount coupling body: https://uk.rs-online.com/web/p/hose-couplings/7640699/
 Locking in-line coupling insert: https://uk.rs-online.com/web/p/hose-couplings/0138385/
 
 Each cold stage is fitted with two locking hose coupling bodies at the front of the instrument. These mate with corresponding coupling inserts
 
-### iii. Cooling capacity (power):
+### iii. Fluid valves:
+
+![Fig.3 - Fluid valves](images/john_guest_valve.png "Fig.3 - Fluid valves")
+
+Blah...
+
+### iv. Cooling capacity (power):
 
 Multiple cold-stages can be connected to a single recirculating chiller, limited by it's total cooling-capacity. Though the heat rejected by a single cold-stage will depend on it's operating condition and applied thermal loads, as a guideline allow ~XXX W of cooling capacity per 30 mm cold-stage or ~XXX W of cooling capacity per 52 mm cold-stage respectively.
 
 If the recirculating chiller is not able to hold the bulk coolant media at or around 5 deg C during cold-stage operation, it indicates that the chosen recirculating chiller does not provide adequate cooling capacity for the desired cold-stage configuration.
 
-### iv. Coolant flow-rate:
+### v. Coolant flow-rate:
 
 A coolant flow-rate of ~
 
@@ -45,19 +51,19 @@ A coolant flow-rate of ~
 
 ### i. Single cold-stage:
 
-![Fig.3 - Single cold-stage](images/2_recommended_single_coldstage.png "Fig.3 - Single cold-stage recommended configuration")
+![Fig.4 - Single cold-stage](images/2_recommended_single_coldstage.png "Fig.4 - Single cold-stage recommended configuration")
 
 Blah...
 
 ### ii. Two cold-stages:
 
-![Fig.4 - Two cold-stages](images/3_recommended_twin_coldstages.png "Fig.4 - Recommended configuration for two cold-stages")
+![Fig.5 - Two cold-stages](images/3_recommended_twin_coldstages.png "Fig.5 - Recommended configuration for two cold-stages")
 
 Blah...
 
 ### iii. Multiple cold-stages:
 
-![Fig.5 - Multiple cold-stages](images/4_recommended_n_coldstages.png "Fig.5 - Recommended configuration for multiple cold-stages")
+![Fig.6 - Multiple cold-stages](images/4_recommended_n_coldstages.png "Fig.6 - Recommended configuration for multiple cold-stages")
 
 Blah...
 
@@ -65,11 +71,11 @@ Blah...
 
 ## 4. Coolant loop priming guide:
 
-![Fig.6 - Priming cold-stage 1](images/5_twin_coldstages_priming_1.png "Fig.6 - Priming cold-stage 1")
+![Fig.7 - Priming cold-stage 1](images/5_twin_coldstages_priming_1.png "Fig.7 - Priming cold-stage 1")
 
 Blah...
 
-![Fig.7 - Priming cold-stage 2](images/5_twin_coldstages_priming_2.png "Fig.7 - Priming cold-stage 2")
+![Fig.8 - Priming cold-stage 2](images/5_twin_coldstages_priming_2.png "Fig.8 - Priming cold-stage 2")
 
 Blah...
 
