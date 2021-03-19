@@ -1,4 +1,4 @@
-[Back to documentation overview](../documentation.md)
+[<-- Back to documentation overview](../documentation.md)
 
 # Getting started with the cold-stage control software
 

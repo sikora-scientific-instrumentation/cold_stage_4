@@ -1,4 +1,4 @@
-[Back to documentation overview](../documentation.md)
+[<-- Back to documentation overview](../documentation.md)
 
 # Air dryer/filter system setup guidelines
 
@@ -28,9 +28,9 @@ Blah...
 
 ## 3. Working with pneumatic push-fit connectors:
 
-Webpage explanation of pneumatic push-fit connectors: [tameson.co.uk](https://tameson.co.uk/push-in-fittings.html)
+Webpage explanation of pneumatic push-fit connectors (external link): [tameson.co.uk](https://tameson.co.uk/push-in-fittings.html)
 
-Video guide to pneumatic push-fit connectors: [youtube.com](https://www.youtube.com/watch?v=b8RFjh6Y-fM)
+Video guide to pneumatic push-fit connectors (external link): [youtube.com](https://www.youtube.com/watch?v=b8RFjh6Y-fM)
 
 Note: The tubing dimensions referred to in the above video are in US imperial measurements. The air-treatment system exclusively comprises 6mm metric pneumatic tubing, however the metric fittings operate exactly as those shown in the video.
 

@@ -1,4 +1,4 @@
-[Back to documentation overview](../documentation.md)
+[<-- Back to documentation overview](../documentation.md)
 
 # Cooling-loop setup guidelines
 
@@ -30,9 +30,9 @@ As a guideline, the coolant media must have a freezing point below the coldest p
 
 ![Fig.2 - Cold-stage fluid couplers](images/cold-stage_couplers.png "Fig.2 - Cold-stage fluid couplers")
 
-Locking panel-mount coupling body: [rs-online](https://uk.rs-online.com/web/p/hose-couplings/7640699/)
+Locking panel-mount coupling body (external link): [rs-online](https://uk.rs-online.com/web/p/hose-couplings/7640699/)
 
-Locking in-line coupling insert: [rs-online](https://uk.rs-online.com/web/p/hose-couplings/0138385/)
+Locking in-line coupling insert (external link): [rs-online](https://uk.rs-online.com/web/p/hose-couplings/0138385/)
 
 Each cold stage is fitted with two locking hose coupling bodies at the front of the instrument. These mate with corresponding coupling inserts
 
