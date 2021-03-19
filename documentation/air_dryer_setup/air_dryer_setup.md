@@ -46,7 +46,7 @@ Blah...
 
 ### 2. Intake connector:
 
-![Fig.5 - ](images/.png "Fig.5 - ")
+![Fig.5 - 1 Intake connector & 2 Inlet rotameters](images/inlet_and_inlet_rotameters_small_edited.png "Fig.5 - 1 Intake connector & 2 Inlet rotameters")
 
 Blah...
 
@@ -76,7 +76,7 @@ Blah...
 
 ### 7. High-flow output rotameter:
 
-![Fig.10 - ](images/.png "Fig.10 - ")
+![Fig.10 - 1 1x High-flow & 2 2x Low-flow output rotameters](images/outlet_rotameters_small_edited.png "Fig.10 - 1 1x High-flow & 2 2x Low-flow output rotameters")
 
 Blah...
 
