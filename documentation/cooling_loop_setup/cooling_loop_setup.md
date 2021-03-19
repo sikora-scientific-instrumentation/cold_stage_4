@@ -1,3 +1,5 @@
+[Back to documentation overview](../documentation.md)
+
 # Cooling-loop setup guidelines
 
 Author: Seb Sikora, March 2021.

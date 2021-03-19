@@ -1,3 +1,5 @@
+[Back to documentation overview](../documentation.md)
+
 # Getting started with the cold-stage control software
 
 Author: Seb Sikora, March 2021.
