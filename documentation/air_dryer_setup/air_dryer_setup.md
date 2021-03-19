@@ -4,13 +4,13 @@ Author: Seb Sikora, March 2021.
 
 Last modified:  Seb Sikora, March 2021.
 
-## Instructions for setting-up the air dryer & particle filter system.
+## Instructions for setting-up the air treatment (dryer & particle filter) system.
 
 ## 1. Introduction & overview:
 
 Blah...
 
-![Fig. - ](images/.png "Fig.")
+![Fig.1 - ](images/.png "Fig.1 - ")
 
 Blah...
 
@@ -22,9 +22,9 @@ Blah...
 
 ## 3. Anatomy of the air-treatment system:
 
-![Fig. - ](images/.png "Fig.")
+![Fig.2 - Air-treatment system schematic overview](images/schematic_view.png "Fig.2 - Air-treatment system schematic overview")
 
-![Fig. - ](images/.png "Fig.")
+![Fig.3 - Air-treatment system](images/overview_small_edited.png "Fig.3 - Air-treatment system")
 
 ### 1. Compressor:
 
