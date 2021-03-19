@@ -24,7 +24,17 @@ Blah...
 
 ---
 
-## 3. Anatomy of the air-treatment system:
+## 3. Working with pneumatic push-fit connectors:
+
+Webpage explanation of pneumatic push-fit connectors: [tameson.co.uk](https://tameson.co.uk/push-in-fittings.html)
+
+Video guide to pneumatic push-fit connectors: [youtube.com](https://www.youtube.com/watch?v=b8RFjh6Y-fM)
+
+Note: The tubing dimensions referred to in the above video are in US imperial measurements. The air-treatment system exclusively comprises 6mm metric pneumatic tubing, however the metric fittings operate exactly as those shown in the video.
+
+---
+
+## 4. Anatomy of the air-treatment system:
 
 ![Fig.3 - Air-treatment system schematic overview](images/schematic_view.png "Fig.3 - Air-treatment system schematic overview")
 
