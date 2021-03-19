@@ -10,4 +10,5 @@ Last modified:  Seb Sikora, March 2021.
 
 [Plumbing guidelines for the configuration of the recirculating chiller cooling-loop](cooling_loop_setup/cooling_loop_setup.md)
 
+[Field-deployable air-treatment system: Information and operational instructions](air_dryer_setup/air_dryer_setup.md)
 
