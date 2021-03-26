@@ -27,6 +27,7 @@ To Run Cold Stage 4:
 In the program directory, enter ipython ColdStage.py at the command line. If no physical instrument is connected you can select the 'simulation_test_device'
 from the device option menu to have a play. If you have a webcam connected (or built-in) you it should detect it. If not, you can run the software without.
 
+The cold-stage documentation and knowledge repository can be found [here](documentation/documentation.md)
 
 Licence:
 --------
