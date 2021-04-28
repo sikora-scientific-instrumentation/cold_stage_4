@@ -365,10 +365,10 @@ class FrontEnd():
 				# Else, the video fault window takes priority over the main frontend window...
 				self.BindParentClicks(self.top, self.video_fault_window)
 				# ...the frontend widget windows if open...
-				if front_end.drop_assay_widget.window_open_flag == True:
-					front_end.BindParentClicks(front_end.drop_assay_widget.widget_window, self.video_fault_window)
-				if front_end.calibration_widget.window_open_flag == True:
-					front_end.BindParentClicks(front_end.calibration_widget.widget_window, self.video_fault_window)
+				if self.drop_assay_widget.window_open_flag == True:
+					self.BindParentClicks(self.drop_assay_widget.widget_window, self.video_fault_window)
+				if self.calibration_widget.window_open_flag == True:
+					self.BindParentClicks(self.calibration_widget.widget_window, self.video_fault_window)
 				# ...the main video window if open...
 				if self.video_enabled == True:
 					self.BindParentClicks(self.video_window, self.video_fault_window)

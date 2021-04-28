@@ -80,22 +80,26 @@ class StartUpConfig():
 		self.video_panel.image = placeholder_tk_image
 		self.video_panel.pack(side = "top", fill = "both", expand = "yes")
 		
-		self.video_device_count = self.GetVideoDeviceCount()
+		#~self.video_device_count = self.GetVideoDeviceCount()
+		#~self.camera_id = tk.IntVar(self.window)
+		#~self.label_cameras = tk.Label(self.video_config_frame, text="Video device ID:", anchor = tk.CENTER, font = ("Arial", 12, 'bold'))
+		#~self.label_cameras.pack(side="top", expand="true", fill = tk.BOTH)
+		#~upper_index = self.video_device_count-1
+		#~if upper_index < 0:
+			#~upper_index = 0
+		#~self.spinbox = tk.Spinbox(self.video_config_frame, from_=0, to_=upper_index, textvariable = self.camera_id)
+		#~self.spinbox.pack(side = "top", expand = "true", fill = tk.BOTH)
+		#~self.camera_id.trace("w", self.VideoCallBack)
 		
-		self.camera_id = tk.IntVar(self.window)
-		self.label_cameras = tk.Label(self.video_config_frame, text="Video device ID:", anchor = tk.CENTER, font = ("Arial", 12, 'bold'))
-		self.label_cameras.pack(side="top", expand="true", fill = tk.BOTH)
-		
-		upper_index = self.video_device_count-1
-		if upper_index < 0:
-			upper_index = 0
-		
-		self.spinbox = tk.Spinbox(self.video_config_frame, from_=0, to_=upper_index, textvariable = self.camera_id)
-		self.spinbox.pack(side = "top", expand = "true", fill = tk.BOTH)
-		self.camera_id.trace("w", self.VideoCallBack)
 		self.video_disabled_flag = tk.BooleanVar(self.window)
 		self.checkButton_video_disabled = tk.Checkbutton(self.video_config_frame, text = "Disable video", variable = self.video_disabled_flag, onvalue = True, offvalue = False)
 		self.checkButton_video_disabled.pack(side = "top", expand = "true", fill = tk.BOTH)
+		self.video_device_list = self.GetVideoDeviceList()
+		self.video_device_count = len(self.video_device_list)
+		self.camera_id = tk.IntVar(self.window)
+		self.video_devices = tk.OptionMenu(*(self.video_config_frame, self.camera_id) + tuple(self.video_device_list)) # OptionMenu is linked to self.device_name StringVar.
+		self.video_devices.pack(side = "top", expand = "true", fill = tk.BOTH)
+		self.camera_id.trace("w", self.VideoCallBack)
 		
 		if self.video_device_count == 0:
 			self.video_disabled_flag.set(True)
@@ -166,7 +170,7 @@ class StartUpConfig():
 		
 	def VideoCallBack(self, *args):
 		self.capture_object.release()
-		self.capture_object = cv2.VideoCapture(int(self.camera_id.get()))
+		self.capture_object = cv2.VideoCapture(self.camera_id.get())
 		self.capture_object.set(3, 320)
 		self.capture_object.set(4, 240)
 	
@@ -214,3 +218,16 @@ class StartUpConfig():
 				video_device_count += 1
 			capture_object.release()
 		return video_device_count
+	
+	def GetVideoDeviceList(self):
+		video_device_list = []
+		video_device_ID = 0
+		while video_device_ID < 10:
+			capture_object = cv2.VideoCapture(video_device_ID)
+			if (capture_object is None) or (not capture_object.isOpened()):
+				capture_object.release()
+			else:
+				video_device_list.append(video_device_ID)
+				capture_object.release()
+			video_device_ID += 1
+		return video_device_list
