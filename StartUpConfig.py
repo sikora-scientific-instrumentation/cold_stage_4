@@ -166,7 +166,7 @@ class StartUpConfig():
 		
 	def VideoCallBack(self, *args):
 		self.capture_object.release()
-		self.capture_object = cv2.VideoCapture(self.camera_id.get())
+		self.capture_object = cv2.VideoCapture(int(self.camera_id.get()))
 		self.capture_object.set(3, 320)
 		self.capture_object.set(4, 240)
 	
