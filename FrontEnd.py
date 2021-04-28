@@ -657,7 +657,8 @@ class FrontEnd():
 			self.logging_flag = True
 	
 	def DisableFrontEndLoggingControls(self):
-		self.checkButton_log_video_split.configure(state = DISABLED)
+		if self.video_enabled == True:
+			self.checkButton_log_video_split.configure(state = DISABLED)
 		self.button_log_off.configure(state = NORMAL)
 		self.button_log_on.configure(state = DISABLED)
 		self.button_log_select.configure(state = DISABLED)
@@ -665,7 +666,8 @@ class FrontEnd():
 	def EnableFrontEndLoggingControls(self):
 		# Activate the video log split checkbox, deactivate start logging button, deactivate stop logging button
 		# and activate the set log location button.
-		self.checkButton_log_video_split.configure(state = NORMAL)
+		if self.video_enabled == True:
+			self.checkButton_log_video_split.configure(state = NORMAL)
 		self.button_log_off.configure(state = DISABLED)
 		self.button_log_on.configure(state = DISABLED)
 		self.button_log_select.configure(state = NORMAL)
