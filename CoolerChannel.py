@@ -73,7 +73,7 @@ class CoolerChannel():
 		self.throttle_setting = 0.0
 		self.temperature_limits = {'max': self.device_parameter_defaults['max_temperature_limit'][self.channel_id], 'min': self.device_parameter_defaults['min_temperature_limit'][self.channel_id]}
 		self.overload_fault_flags = {'suspected': False, 'start_time': 0.0, 'confirmed': False}
-		self.temperature_rates = {'old_1st_derivative': 0.0, '1st_derivative': 0.0, '2nd_derivative': 0.0}
+		#~self.temperature_rates = {'old_1st_derivative': 0.0, '1st_derivative': 0.0, '2nd_derivative': 0.0}
 		
 		# Load the prt and thermocouple calibration coefficients.
 		self.prt_calibration_coeffs = self.LoadCalibration('Channel ' + str(self.channel_id) + ' internal PRT', self.device_parameter_defaults['prt_calibration_coeffs_filepath'][self.channel_id])
@@ -416,18 +416,18 @@ class CoolerChannel():
 				calibrated_min_temp_limit = float(temp_limit_file.readline())
 			self.temperature_limits['max'] = calibrated_max_temp_limit
 			self.temperature_limits['min'] = calibrated_min_temp_limit
-			print('Calibrated temperature limit found:')
+			print('Calibrated temperature limits found:')
 			print('    Max = ' + '{:0.2f}'.format(calibrated_max_temp_limit) + ' deg C')
 			print('    Min = ' + '{:0.2f}'.format(calibrated_min_temp_limit) + ' deg C')
 			self.mq_back_to_front.put((2, 'Set_temp_limits', '{:0.2f}'.format(calibrated_max_temp_limit), '{:0.2f}'.format(calibrated_min_temp_limit)))
 		else:
-			print('No calibrated minimum temperature limit found, defaulting to:')
+			print('No calibrated minimum temperature limits found, defaulting to:')
 			print('    Max = ' + str(self.temperature_limits['max']) + ' deg C')
 			print('    Min = ' + str(self.temperature_limits['min']) + ' deg C')
-		print("-----------------------------------------------------------------------------------")
+		print("--------------------------------------------------------------------------------")
 	
 	def LoadCalibration(self, identity_string, calibration_path):
-		print("-----------------------------------------------------------------------------------")
+		print("--------------------------------------------------------------------------------")
 		print('Loading calibration coefficients for ' + identity_string + ':')
 		file_exists = os.path.isfile(calibration_path)
 		if file_exists:
@@ -444,7 +444,7 @@ class CoolerChannel():
 		else:
 			print('No calibration file loaded, defaulting to y = x.')
 			calibration_coeffs = [1.0, 0.0]
-		print("-----------------------------------------------------------------------------------")
+		print("--------------------------------------------------------------------------------")
 		return calibration_coeffs
 	
 	def EnableTCCalibration(self):
@@ -453,9 +453,9 @@ class CoolerChannel():
 		self.event_back_to_front['calibration_zeroed_flag'].clear()
 	
 	def DisableTCCalibration(self):
-		print("-----------------------------------------------------------------------------------")
+		print("--------------------------------------------------------------------------------")
 		print('Disabling calibration of ' + str(self.channel_id) + ' internal thermocouple.')
-		print("-----------------------------------------------------------------------------------")
+		print("--------------------------------------------------------------------------------")
 		self.tc_calibration_coeffs = [1.0, 0.0]	
 		self.event_back_to_front['calibration_zeroed_flag'].set()
 	

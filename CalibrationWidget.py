@@ -140,6 +140,8 @@ class CalibrationWidget():
 		# If there is a poll call pending, cancel it.
 		if self.poll_id in self.widget_window.tk.call("after", "info"):
 				self.widget_window.after_cancel(self.poll_id)
+		# If we are in the auto-range part of the auto-calibration and the gradient detection mode is on, turn it off.
+		self.event_back_to_front['gradient_detect_flag'].clear()
 		# Stop logging.
 		self.mq_front_to_back.put(('StopLogging',))
 		# Cancel the ramp if it's running by turning the stage 'off'.
