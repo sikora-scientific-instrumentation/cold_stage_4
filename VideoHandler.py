@@ -71,8 +71,7 @@ class VideoHandler():
 			# To mitigate this we want to empty the buffer completely every time, then call read() to return the decoded next frame
 			# captured to the internal buffer. This involves a lot of overhead,however, so instead we call grab() as often as possible,
 			# which causes a new frame to be captured from hardware and stored in the buffer. When we actually want to return the
-			# decoded newest frame in the buffer we call retrieve().
-			#
+			# decoded oldest remaining frame in the buffer we call retrieve().
 			
 			if self.video_fault_flag == True:
 				reconnect_successful = self.VideoConnect(self.video_device_number, self.image_x_dimension, self.image_y_dimension)
@@ -81,15 +80,17 @@ class VideoHandler():
 					self.event_vlogger_fault.clear()
 			
 			if self.video_fault_flag == False:
-				#~capture_timestamp = time.time()
 				try:
+					ret = self.capture_object.grab()
+					ret = self.capture_object.grab()
+					ret = self.capture_object.grab()
+					ret = self.capture_object.grab()
 					ret = self.capture_object.grab()
 				except:
 					ret = False
 			else:
 				ret = False
-			
-			capture_timestamp = time.time()
+			self.capture_timestamp = time.time()
 			
 			if ((ret == False) and (self.video_fault_flag == False)):
 				self.video_fault_flag = True
@@ -98,6 +99,7 @@ class VideoHandler():
 			if self.logging == False:
 				# If we aren't logging then we are in 'live view' mode which we run at ~4 Hz.
 				if time.time() - frontend_timestamp > 0.25:
+					frontend_timestamp = time.time()
 					if self.video_fault_flag == False:
 						try:
 							ret, capture = self.capture_object.retrieve()
@@ -119,7 +121,6 @@ class VideoHandler():
 							draw_text.text((0, offset), text[i], font = self.text_font, fill = "#0000FF")
 							offset += text_spacing
 						self.mq_vlogger_to_front.put(rgb_image)
-						frontend_timestamp = time.time()
 					else:
 						if self.video_fault_flag == False:
 							self.event_vlogger_fault.set()
@@ -155,7 +156,7 @@ class VideoHandler():
 					print('Video capture resolution changed to ' + str(last_command[1]) + 'x' + str(last_command[2]))
 				elif last_command[0] == 'Go':
 					if self.logging == True:
-						self.Capture(timestamp = capture_timestamp, frame_params = last_command[1])
+						self.Capture(timestamp = self.capture_timestamp, frame_params = last_command[1])
 		
 		# Try and release the video capture device cleanly.
 		try:
