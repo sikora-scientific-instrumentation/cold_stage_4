@@ -71,7 +71,7 @@ class VideoHandler():
 			# To mitigate this we want to empty the buffer completely every time, then call read() to return the decoded next frame
 			# captured to the internal buffer. This involves a lot of overhead,however, so instead we call grab() as often as possible,
 			# which causes a new frame to be captured from hardware and stored in the buffer. When we actually want to return the
-			# decoded oldest frame in the buffer we call retrieve().
+			# decoded newest frame in the buffer we call retrieve().
 			#
 			
 			if self.video_fault_flag == True:
@@ -95,7 +95,7 @@ class VideoHandler():
 			capture_timestamp = time.time()
 			
 			if self.logging == False:
-				# If we aren't logging then we are in 'live view' mode which we run at 4 Hz.
+				# If we aren't logging then we are in 'live view' mode which we run at ~4 Hz.
 				if time.time() - frontend_timestamp > 0.25:
 					if self.video_fault_flag == False:
 						try:
@@ -153,7 +153,8 @@ class VideoHandler():
 					self.capture_object.set(4, self.image_y_dimension)
 					print('Video capture resolution changed to ' + str(last_command[1]) + 'x' + str(last_command[2]))
 				elif last_command[0] == 'Go':
-					self.Capture(timestamp = capture_timestamp, frame_params = last_command[1])
+					if self.logging == True:
+						self.Capture(timestamp = capture_timestamp, frame_params = last_command[1])
 		
 		# Try and release the video capture device cleanly.
 		try:

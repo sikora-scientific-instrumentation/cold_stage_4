@@ -82,23 +82,23 @@ class ArduinoComms():
 			self.Clear()
 		return self.connected
 	
-	def ConnectByPort(self, port):
-		success_flag = self.Connect(port, self.baud)
-		if success_flag == True:
-			fault_flag, responses = self.Call('Greeting', 3)
-			if fault_flag == '':
-				self.port = port
-				self.unique_id = int(responses[0])
-				self.welcome_string = responses[1]
-				self.number_of_channels = int(responses[2])
-				print("Connected to device: " + self.welcome_string + ", ID: " + str(self.unique_id) + " on port: " + self.port)
-				self.connected = True
-			else:
-				self.serial_connection.close()
-				self.Clear()
-		else:
-			self.Clear()
-		return self.connected
+	#~def ConnectByPort(self, port):
+		#~success_flag = self.Connect(port, self.baud)
+		#~if success_flag == True:
+			#~fault_flag, responses = self.Call('Greeting', 3)
+			#~if fault_flag == '':
+				#~self.port = port
+				#~self.unique_id = int(responses[0])
+				#~self.welcome_string = responses[1]
+				#~self.number_of_channels = int(responses[2])
+				#~print("Connected to device: " + self.welcome_string + ", ID: " + str(self.unique_id) + " on port: " + self.port)
+				#~self.connected = True
+			#~else:
+				#~self.serial_connection.close()
+				#~self.Clear()
+		#~else:
+			#~self.Clear()
+		#~return self.connected
 	
 	def ScanForDevices(self):
 		#~print("-----------------------------------------------------------------------------------")
@@ -153,7 +153,7 @@ class ArduinoComms():
 				#~time.sleep(1.0)
 				self.serial_connection.reset_input_buffer()
 			else:
-				self.serial_connection = FakeDuino.FakeDuino(self.parent.device_parameter_defaults['simulation_number_of_channels'], self.parent.device_parameter_defaults['time_step'], 4.0, 20.0, 1.0, 0.021, 16)
+				self.serial_connection = FakeDuino.FakeDuino(self.parent.device_parameter_defaults['simulation_number_of_channels'], self.parent.device_parameter_defaults['time_step'], 4.0, 20.0, 1.0, 0.01, 25)
 			success_flag = True
 			print("...success!")
 		except:

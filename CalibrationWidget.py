@@ -33,6 +33,8 @@ import time
 import numpy as np
 import csv
 
+import Utilities
+
 class CalibrationWidget():
 	def __init__ (self, parent, channel_id, comms_unique_id, root_tk, device_parameter_defaults, mq_front_to_back, event_back_to_front):
 		self.device_parameter_defaults = device_parameter_defaults
@@ -43,16 +45,15 @@ class CalibrationWidget():
 		self.event_back_to_front = event_back_to_front
 		self.root_tk = root_tk
 		
-		if str(self.comms_unique_id) == '0':
-			self.type_identifier = '0'
-		else:
-			self.type_identifier = str(self.comms_unique_id)[0:2]
-		print("TYPE", self.type_identifier)
-		self.calibration_fit_polynomial_order = self.device_parameter_defaults['calibration_fit_polynomial_order'][self.type_identifier]
+		self.calibration_fit_polynomial_order = self.device_parameter_defaults['calibration_fit_polynomial_order']
+		self.temperature_steps = self.device_parameter_defaults['auto_calibration_temperature_steps']
+		self.auto_range_max_throttle = self.device_parameter_defaults['auto_range_max_throttle']
+		
 		self.tc_calibration_temp_data_filepath = self.device_parameter_defaults['tc_calibration_temp_data_filepath'][self.channel_id]
 		self.tc_calibration_final_data_filepath = self.device_parameter_defaults['tc_calibration_final_data_filepath'][self.channel_id]
 		self.tc_calibration_coeffs_filepath = self.device_parameter_defaults['tc_calibration_coeffs_filepath'][self.channel_id]
-		self.tc_calibration_ramp_profile_filepath = self.device_parameter_defaults['tc_calibration_ramp_profile_filepath'][self.type_identifier]
+		self.temp_limit_filepath = self.device_parameter_defaults['calibrated_temp_limits_filepath'][self.channel_id]
+		
 		self.cancelled_flag = False
 		self.window_open_flag = False
 		
@@ -72,38 +73,54 @@ class CalibrationWidget():
 		self.mq_front_to_back.put(('SetTimeStep', self.device_parameter_defaults['tc_calibration_time_step']))
 		self.mq_front_to_back.put(('LoggingRate', self.device_parameter_defaults['tc_calibration_logging_rate']))
 		
-		# Zero the thermocouple calibration before logging the calibration ramp.
-		self.mq_front_to_back.put(('CalibrationOff',))
-		
 		# Check if temporary file already exists and if so, delete it.
 		file_exists = os.path.isfile(self.tc_calibration_temp_data_filepath)
 		if file_exists:
 			os.remove(self.tc_calibration_temp_data_filepath)
 		else:
-			# Check if calibration file directory for this channel exists, and if not, create it.
-			dir_path = '/'.join(self.tc_calibration_temp_data_filepath.split('/')[0:-1])
-			print(dir_path)
-			if os.path.isdir(dir_path) == False:
-				os.mkdir(dir_path)
+			# There should now always be a calibration file directory for each channel, as it will be created at startup
+			# if there is not one containing a default PRT calibration file.
+			pass
 		
-		# Set the back_to_front mpevent. We are going to poll on this until it is cleared by the back end to signal
-		# the end of the ramp.
-		self.event_back_to_front.set()
-		# Start the calibration ramp.
-		self.mq_front_to_back.put(('Ramp', 1, True, self.tc_calibration_ramp_profile_filepath, None))
-		# Start logging.
-		self.mq_front_to_back.put(('StartLogging', self.tc_calibration_temp_data_filepath, True, True))
+		# Zero the thermocouple calibration before logging the calibration ramp.
+		self.mq_front_to_back.put(('CalibrationOff',))
+		
+		self.mode = 0
 		self.PollEvent()
 	
 	def PollEvent(self):
-		# We're polling event_back_to_front until it's been cleared by the backend to say that the logger thread has
-		# been stopped at the end of the calibration ramp profile.
+		repeat_poll_flag = False
 		if self.cancelled_flag == False:
-			#~self.widget_window.grab_set()
-			if self.event_back_to_front.is_set() == False:
-				# The calibration ramp is completed!
-				self.Finish()
-			else:
+			if self.mode == 0:
+				# We are waiting for confirmation that the backend has zeroed the calibration coeffs.
+				if self.event_back_to_front['calibration_zeroed_flag'].is_set() == True:
+					self.mode = 1
+					self.event_back_to_front['gradient_detect_flag'].set()
+					self.mq_front_to_back.put(('Throttle', self.device_parameter_defaults['auto_range_max_throttle']))
+				repeat_poll_flag = True
+			elif self.mode == 1:
+				# We are waiting to hit ~1k/min rate at 100% throttle.
+				if self.event_back_to_front['gradient_detect_flag'].is_set() == False:
+					self.mode = 2
+					with open('./min_temperature.tmp', 'r') as temporary_temperature_file:
+						minimum_temperature_reached = float(temporary_temperature_file.readline())
+					calibration_table = self.GenerateCalibrationTable(minimum_temperature_reached, self.temperature_steps)
+					# Start the calibration ramp.
+					self.mq_front_to_back.put(('Ramp', 1, True, None, calibration_table))
+					# Start logging.
+					self.mq_front_to_back.put(('StartLogging', self.tc_calibration_temp_data_filepath, True, True))
+					self.event_back_to_front['ramp_running_flag'].set()
+				repeat_poll_flag = True
+			elif self.mode == 2:
+				# We're polling event_back_to_front until it's been cleared by the backend to say that the logger thread has
+				# been stopped at the end of the calibration ramp profile.
+				if self.event_back_to_front['ramp_running_flag'].is_set() == False:
+					# The calibration ramp is completed!
+					repeat_poll_flag = False
+					self.Finish()
+				else:
+					repeat_poll_flag = True
+			if repeat_poll_flag == True:
 				# Re-prime the poll event.
 				self.poll_id = self.widget_window.after(250, self.PollEvent)	
 	
@@ -194,10 +211,10 @@ class CalibrationWidget():
 			
 		# Determine the fit coefficients and build the string to write to the calibration csv file.
 		fit_coefficients = np.polyfit(tc_averages, prt_averages, self.calibration_fit_polynomial_order)
-		row_to_write = str(fit_coefficients[0])
+		coeffs_row_to_write = str(fit_coefficients[0])
 		for current_coefficient in fit_coefficients[1:]:
-			row_to_write += ','
-			row_to_write += str(current_coefficient)
+			coeffs_row_to_write += ','
+			coeffs_row_to_write += str(current_coefficient)
 		
 		# If there is an existing calibration coefficients file, back it up.
 		stamp = datetime.datetime.today()
@@ -215,8 +232,10 @@ class CalibrationWidget():
 			os.rename(self.tc_calibration_final_data_filepath, new_filename)
 		
 		# Create the new calibration coefficients file.
-		new_tc_calibration_file = open(self.tc_calibration_coeffs_filepath, 'a')
-		new_tc_calibration_file.write(row_to_write)
+		calibration_timestamp_string = '# Calibrated on ' + date_stamp + ' at ' + time_stamp + '\n'
+		new_tc_calibration_file = open(self.tc_calibration_coeffs_filepath, 'w')
+		new_tc_calibration_file.write(calibration_timestamp_string)
+		new_tc_calibration_file.write(coeffs_row_to_write)
 		new_tc_calibration_file.close()
 		
 		# Create the new calibration data file.
@@ -227,12 +246,29 @@ class CalibrationWidget():
 		if file_exists:
 			os.remove(self.tc_calibration_temp_data_filepath)
 		
+		# If there is an existing temperature limit file, back it up.
+		file_exists = os.path.isfile(self.temp_limit_filepath)
+		if file_exists:
+			new_filename = self.temp_limit_filepath[:-4] + '_backed_up_on_' + date_stamp + '_at_' + time_stamp + '.csv'
+			os.rename(self.temp_limit_filepath, new_filename)
+		
+		# Create the new minimum temperature limit file.
+		max_temperature_reached = tc_averages[0]
+		min_temperature_reached = tc_averages[-1]
+		new_temp_limit_file = open(self.temp_limit_filepath, 'w')
+		corrected_max_temp_limit = Utilities.PolynomialCorrection(max_temperature_reached, fit_coefficients)
+		corrected_min_temp_limit = Utilities.PolynomialCorrection(min_temperature_reached, fit_coefficients)
+		new_temp_limit_file.write('{:0.3f}'.format(corrected_max_temp_limit) + '\n')
+		new_temp_limit_file.write('{:0.3f}'.format(corrected_min_temp_limit) + '\n')
+		new_temp_limit_file.close()
+		
 		# Re-load and enable the thermocouple calibration (freshly updated!).
 		self.mq_front_to_back.put(('CalibrationOn',))
 		# Turn the stage 'off'.
 		self.mq_front_to_back.put(('Off',))
 		
 		# And we are done!
+		print('*** AUTO-CALIBRATION COMPLETE ***')
 		self.parent.UnbindParentClicks(self.parent.top)
 		if self.parent.video_enabled == True:
 			self.parent.UnbindParentClicks(self.parent.video_window)
@@ -258,3 +294,11 @@ class CalibrationWidget():
 		self.parent.BindParentClicks(self.parent.top, self.widget_window)
 		if self.parent.video_enabled == True:
 			self.parent.BindParentClicks(self.parent.video_window, self.widget_window)
+	
+	def GenerateCalibrationTable(self, minimum_temperature_reached, steps):
+		temperatures = np.linspace(self.device_parameter_defaults['max_temperature_limit'][self.channel_id], minimum_temperature_reached, steps)
+		calibration_table = []
+		for i in range(steps):
+			calibration_table.append(['setpoint', temperatures[i]])
+			calibration_table.append(['hold', 120.0])
+		return calibration_table

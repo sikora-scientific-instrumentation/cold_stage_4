@@ -56,6 +56,9 @@ class FakeDuino():
 		self.measurement_quantization_per_deg = measurement_quantization_per_deg
 		self.models = [CoolerModel.CoolerModel(self.object_temp_deg_c, self.fluid_temp_deg_c, self.heatsink_temp_deg_c, self.measurement_noise_sd, self.measurement_quantization_per_deg) for i in range(self.num_channels)]
 		
+		self.prt_diff_slope = 1.1
+		self.prt_diff_offset = -0.1
+		
 	def close(self):
 		pass
 	
@@ -117,7 +120,7 @@ class FakeDuino():
 				current_model_temperature = self.models[self.current_channel].ReadTemperatureC()
 				flow_rate = self.flow_rate[self.current_channel]
 				self.tx_buffer = '>' + str(current_model_temperature) + '<' + str(self.calcCRC8(str(current_model_temperature))) + '<'
-				self.tx_buffer += '>' + str(current_model_temperature) + '<' + str(self.calcCRC8(str(current_model_temperature))) + '<'
+				self.tx_buffer += '>' + str((current_model_temperature * self.prt_diff_slope) + self.prt_diff_offset) + '<' + str(self.calcCRC8(str((current_model_temperature * self.prt_diff_slope) + self.prt_diff_offset))) + '<'
 				self.tx_buffer += '>' + str(flow_rate) + '<' + str(self.calcCRC8(str(flow_rate))) + '<'
 				self.models[self.current_channel].SetThrottle(0.0)
 			elif self.rx_buffer == 'Throttle':
@@ -138,7 +141,7 @@ class FakeDuino():
 			current_model_temperature = self.models[self.current_channel].ReadTemperatureC()
 			flow_rate = self.flow_rate[self.current_channel]
 			self.tx_buffer = '>' + str(current_model_temperature) + '<' + str(self.calcCRC8(str(current_model_temperature))) + '<'
-			self.tx_buffer += '>' + str(current_model_temperature) + '<' + str(self.calcCRC8(str(current_model_temperature))) + '<'
+			self.tx_buffer += '>' + str((current_model_temperature * self.prt_diff_slope) + self.prt_diff_offset) + '<' + str(self.calcCRC8(str((current_model_temperature * self.prt_diff_slope) + self.prt_diff_offset))) + '<'
 			self.tx_buffer += '>' + str(flow_rate) + '<' + str(self.calcCRC8(str(flow_rate))) + '<'
 			self.models[self.current_channel].SetThrottle(new_throttle_setting)
 			self.fakeduino_mode[self.current_channel] = 'Idle'

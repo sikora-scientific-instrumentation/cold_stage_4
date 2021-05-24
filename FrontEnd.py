@@ -89,6 +89,7 @@ class FrontEnd():
 		self.update_rate = self.device_parameter_defaults['plot_update_rate'][self.channel_id]
 		self.logging_rate = self.device_parameter_defaults['logging_rate'][self.channel_id]
 		self.plotting_max_span = self.device_parameter_defaults['plot_span'][self.channel_id]
+		self.temperature_limits = {'max': self.device_parameter_defaults['max_temperature_limit'][self.channel_id], 'min': self.device_parameter_defaults['min_temperature_limit'][self.channel_id]}
 		
 		# Create the control panel and video feed tk windows. 
 		self.root_tk = root_tk
@@ -170,6 +171,11 @@ class FrontEnd():
 							self.button_log_select.configure(state = NORMAL)
 							self.logging_flag = False
 					self.label_mode.configure(text = most_recent_message[2])
+				elif most_recent_message[1] == 'Set_temp_limits':
+					self.temperature_limits['max'] = float(most_recent_message[2])
+					self.temperature_limits['min'] = float(most_recent_message[3])
+					self.label_current_max_limit_reading.configure(text = most_recent_message[2])
+					self.label_current_min_limit_reading.configure(text = most_recent_message[3])
 				elif most_recent_message[1] == 'Set_logging_label':
 					self.label_logging_reading.configure(text = most_recent_message[2])
 				elif most_recent_message[1] == 'All_shutdown_confirm':
@@ -519,16 +525,16 @@ class FrontEnd():
 		if self.ClicksAreActive() == True:
 			try:
 				new_setpoint = float(self.entry_setpoint.get()) 
-				if new_setpoint < self.device_parameter_defaults['min_temperature_limit'][self.channel_id]:
-					new_setpoint = self.device_parameter_defaults['min_temperature_limit'][self.channel_id]
-				elif new_setpoint > self.device_parameter_defaults['max_temperature_limit'][self.channel_id]:
-					new_setpoint = self.device_parameter_defaults['max_temperature_limit'][self.channel_id]
+				if new_setpoint < self.temperature_limits['min']:
+					new_setpoint = self.temperature_limits['min']
+				elif new_setpoint > self.temperature_limits['max']:
+					new_setpoint = self.temperature_limits['max']
 				self.setpoint = new_setpoint
 				self.running_flag = True
 				self.mq_front_to_back.put(('SetPoint', self.setpoint))
 				self.EnableFrontEndRampControls()
 			except:
-				self.GenerateGenericWarningWindow("Warning", "Setpoint must be numerical between " + str(self.device_parameter_defaults['min_temperature_limit'][self.channel_id]) + " and " + str(self.device_parameter_defaults['max_temperature_limit'][self.channel_id]) + " deg C.")
+				self.GenerateGenericWarningWindow("Warning", "Setpoint must be numerical between " + str(self.temperature_limits['min']) + " and " + str(self.temperature_limits['max']) + " deg C.")
 	
 	def SetTimestep(self):
 		if self.ClicksAreActive() == True:
@@ -730,7 +736,7 @@ class FrontEnd():
 		
 		# Left master frame:
 		# Comprises status frame...
-		self.status_frame = tkinter.ttk.Frame(self.left_master_frame, borderwidth = 1, relief = "sunken")
+		self.status_frame = tkinter.ttk.Frame(self.left_master_frame, borderwidth = 1, relief = "flat")
 		self.status_frame.pack(side="top", expand="true", fill = tk.BOTH)
 		
 		# ...Master tabs.
@@ -742,7 +748,7 @@ class FrontEnd():
 		self.top_level_notebook.pack(side = "top", expand = "true", fill = tk.BOTH)
 		
 		# ...'Automatic controls' tabbled (Notebook) frames...
-		self.automatic_controls_frame = tkinter.ttk.Frame(self.automatic_controls_tab, borderwidth = 1, relief = "sunken")
+		self.automatic_controls_frame = tkinter.ttk.Frame(self.automatic_controls_tab, borderwidth = 1, relief = "flat")
 		self.automatic_controls_frame.pack(side = "top", expand = "true", fill = tk.BOTH)
 		self.button_auto_calibrate = tkinter.ttk.Button(self.automatic_controls_frame, text="Auto calibrate", command=self.AutoCalibrate)
 		self.button_auto_calibrate.pack(side = "top", pady = 5, expand = "false", fill = tk.X)
@@ -771,7 +777,7 @@ class FrontEnd():
 		self.N.pack(side = "top", expand = "true", fill = tk.BOTH)
 		
 		# ...and off/quit buttons frame...
-		self.buttons_frame = tkinter.ttk.Frame(self.left_master_frame, borderwidth = 1, relief = "sunken")
+		self.buttons_frame = tkinter.ttk.Frame(self.left_master_frame, borderwidth = 1, relief = "flat")
 		self.buttons_frame.pack(side = "top", expand = "true", fill = tk.BOTH)
 		
 		# Status frame:
@@ -786,6 +792,14 @@ class FrontEnd():
 		self.mode_frame.pack(side="top", expand="true", fill = tk.X)
 		self.logging_frame = tkinter.ttk.Frame(self.status_frame, borderwidth = 1, relief = "sunken")
 		self.logging_frame.pack(side="top", expand="true", fill = tk.X)
+		self.limits_frame = tkinter.ttk.Frame(self.status_frame, borderwidth = 1, relief = "sunken")
+		self.limits_frame.pack(side="top", expand="true", fill = tk.X)
+		self.limits_frame_label = tkinter.ttk.Frame(self.limits_frame, borderwidth = 1, relief = "groove")
+		self.limits_frame_label.pack(side="left", expand="true", fill = tk.X)
+		self.limits_frame_max = tkinter.ttk.Frame(self.limits_frame, borderwidth = 1, relief = "groove")
+		self.limits_frame_max.pack(side="left", expand="true", fill = tk.X)
+		self.limits_frame_min = tkinter.ttk.Frame(self.limits_frame, borderwidth = 1, relief = "groove")
+		self.limits_frame_min.pack(side="right", expand="true", fill = tk.X)
 		
 		self.label_mode = tkinter.ttk.Label(self.mode_frame, text="Idle", font = ("Arial", 12))
 		self.label_mode.pack(side="top", expand="true", fill = tk.X)
@@ -807,6 +821,17 @@ class FrontEnd():
 		self.label_current_flowrate_title.pack(side = "left", expand = "false")
 		self.label_current_flowrate_reading = tkinter.ttk.Label(self.flowrate_frame, text = "", font = ("Arial", 12), justify = "right")
 		self.label_current_flowrate_reading.pack(side = "right", expand = "false")
+		
+		self.label_limits_title = tkinter.ttk.Label(self.limits_frame_label, text = "Temp limits (deg C)", font = ("Arial", 12), justify = "center")
+		self.label_limits_title.pack(side = "left", expand = "true")
+		self.label_current_max_limit_title = tkinter.ttk.Label(self.limits_frame_max, text = "Max", font = ("Arial", 12), justify = "center")
+		self.label_current_max_limit_title.pack(side = "left", expand = "true")
+		self.label_current_max_limit_reading = tkinter.ttk.Label(self.limits_frame_max, text = str(self.temperature_limits['max']), font = ("Arial", 12), justify = "center")
+		self.label_current_max_limit_reading.pack(side = "right", expand = "true")
+		self.label_current_min_limit_title = tkinter.ttk.Label(self.limits_frame_min, text = "Min", font = ("Arial", 12), justify = "center")
+		self.label_current_min_limit_title.pack(side = "left", expand = "true")
+		self.label_current_min_limit_reading = tkinter.ttk.Label(self.limits_frame_min, text = str(self.temperature_limits['min']), font = ("Arial", 12), justify = "center")
+		self.label_current_min_limit_reading.pack(side = "right", expand = "true")
 		
 		# Notebook frame:
 		# tab f1 contains raw throttle controls

@@ -29,6 +29,7 @@ from multiprocessing import Queue, Process, Event
 import threading as Thread
 import os, sys
 import csv
+import numpy as np
 
 import Utilities
 import RampManager
@@ -77,6 +78,7 @@ class CoolerChannel():
 		# Load the prt and thermocouple calibration coefficients.
 		self.prt_calibration_coeffs = self.LoadCalibration('Channel ' + str(self.channel_id) + ' internal PRT', self.device_parameter_defaults['prt_calibration_coeffs_filepath'][self.channel_id])
 		self.EnableTCCalibration()
+		self.LoadTempLimits()
 		
 		if self.backend_object.comms_success_flag == True:
 			# Get channel temperature upon instantiation:
@@ -84,6 +86,7 @@ class CoolerChannel():
 			# the current temperature.
 			success_flag, responses = self.comms_manager.StageChannelSelect(self.channel_id)
 			if success_flag == True:
+				self.current_time = time.time()
 				success_flag, responses = self.comms_manager.StageIdle(self.channel_id)
 				if success_flag == True:
 					self.temperature = Utilities.PolynomialCorrection(float(responses[0]), self.tc_calibration_coeffs)
@@ -140,7 +143,7 @@ class CoolerChannel():
 								if ((self.video_enabled_flag == True) and (self.force_video_off == False)):
 									self.StopVideo()
 						# Clear the mpevent here to let the frontend widget in control know that we have reached the target setpoint.
-						self.event_back_to_front.clear()
+						self.event_back_to_front['ramp_running_flag'].clear()
 					if message_to_front_end[0] == True:
 						# If we've reached the end of a state in the ramp profile, update the mode display with the new state.
 						self.mq_back_to_front.put((2, 'Set_mode_label', message_to_front_end[1]))
@@ -163,19 +166,32 @@ class CoolerChannel():
 			self.PRT_temperature = Utilities.PolynomialCorrection(float(responses[1]), self.prt_calibration_coeffs)
 			self.flow_rate = float(responses[2])
 			
-			# If we are in raw throttle-control mode, if we breach max or min temperature limits, switch to setpoint mode
-			# with the setpoint equal to the limit just breached.
 			if self.mode == 'throttle':
-				if ((self.temperature > self.temperature_limits['max']) or (self.temperature < self.temperature_limits['min'])):
-					if self.temperature > self.temperature_limits['max']:
-						new_setpoint = self.temperature_limits['max']
-					else:
-						new_setpoint = self.temperature_limits['min']
-					self.SwitchToSetpointMode(new_setpoint)
+				# If we are in raw throttle-control mode, and gradient_detect_flag is not set (ie, we aren't determining max delta t),
+				# if we breach max or min temperature limits, switch to setpoint mode with the setpoint equal to the limit just breached.
+				if self.event_back_to_front['gradient_detect_flag'].is_set() == False:
+					if ((self.temperature > self.temperature_limits['max']) or (self.temperature < self.temperature_limits['min'])):
+						if self.temperature > self.temperature_limits['max']:
+							new_setpoint = self.temperature_limits['max']
+						else:
+							new_setpoint = self.temperature_limits['min']
+						self.SwitchToSetpointMode(new_setpoint)
+				
+				# If we are cooling under throttle mode, if more than 2 seconds have elapsed sice throttle mode started 
+				# (beginning of rolling gradient calcs) then check the rolling gradient value. If we are cooling at less
+				# than 1 degree/min, we have reached 'max delta t'.
+				if ((self.event_back_to_front['gradient_detect_flag'].is_set() == True) and ((time.time() - self.rolling_gradient_start_timestamp) > 2.0)):
+					rolling_gradient = self.rolling_gradient.AddSample([self.temperature, self.current_time])
+					target_rate_per_second = self.device_parameter_defaults['auto_range_min_cooling_rate_per_min'] / 60.0
+					if rolling_gradient > target_rate_per_second:
+						print('Minimum temperature at which ' + str(self.device_parameter_defaults['auto_range_min_cooling_rate_per_min']) + ' deg C / minute achieveable = ' + '{:0.3f}'.format(self.temperature))
+						with open('./min_temperature.tmp', 'w') as temporary_temperature_file:
+							temporary_temperature_file.write('{:0.3f}'.format(self.temperature) + '\n')
+						self.event_back_to_front['gradient_detect_flag'].clear()
 			
-			self.temperature_rates['old_1st_derivative'] = self.temperature_rates['1st_derivative']
-			self.temperature_rates['1st_derivative'] = (self.temperature - self.last_temperature) / self.time_step
-			self.temperature_rates['2nd_derivative'] = (self.temperature_rates['1st_derivative'] - self.temperature_rates['old_1st_derivative']) / self.time_step
+			#~self.temperature_rates['old_1st_derivative'] = self.temperature_rates['1st_derivative']
+			#~self.temperature_rates['1st_derivative'] = (self.temperature - self.last_temperature) / self.time_step
+			#~self.temperature_rates['2nd_derivative'] = (self.temperature_rates['1st_derivative'] - self.temperature_rates['old_1st_derivative']) / self.time_step
 			
 			if self.shut_down_flag == False:
 				# Write timestamp 3 - Final timestep reply received from Arduino.
@@ -187,19 +203,19 @@ class CoolerChannel():
 						sp = self.setpoint
 						if sp != 'NA':
 							sp = str(round(sp, 3))						
-						if self.video_enabled_flag == True:
+						if ((self.video_enabled_flag == True) and (self.force_video_off == False)):
 							if self.video_fault_flag == False:
 								if self.event_vlogger_fault.is_set() == False:
 									self.mq_back_to_vlogger.put(('Go', {'index': str(self.logging_counter), 'temp': str(round(self.temperature, 3)), 'setpoint': sp}))
 									log_file_video_fault_flag = ''
 								else:
-									log_file_video_fault_flag = ', VIDEO_FAULT'
+									log_file_video_fault_flag = 'VIDEO_FAULT'
 									self.video_fault_flag = True
 									self.mq_back_to_front.put((2, 'Video_fault'))
 							else:
-								log_file_video_fault_flag = ', VIDEO_FAULT'
+								log_file_video_fault_flag = 'VIDEO_FAULT'
 						else:
-							log_file_video_fault_flag = ', VIDEO_DISABLED'
+							log_file_video_fault_flag = 'VIDEO_DISABLED'
 						self.mq_back_to_logger.put((str(round(self.current_time - self.logging_start_time, 3)) + ', ' + str(self.logging_counter) + ', ' + str(sp) + ', ' + str(round(self.temperature, 3)) + ', ' + str(round(self.PRT_temperature, 3)) + ', ' + str(round(self.flow_rate, 3)) + ', ' + log_file_video_fault_flag))
 						self.logging_sub_counter = 1
 						self.logging_counter += 1
@@ -226,24 +242,24 @@ class CoolerChannel():
 					self.flow_fault_flag = False
 					self.mq_back_to_front.put((2, 'Flow_success'))
 				
-				# Check for peltier module overload fault start/end and update front end.
-				if self.mode != 'idle':
-					if (((self.throttle_setting > 95.0) and (self.temperature_rates['1st_derivative'] > 0.0)) or ((self.throttle_setting < -95.0) and (self.temperature_rates['1st_derivative'] < 0.0))):
-						if ((self.overload_fault_flags['suspected'] == False) and (self.overload_fault_flags['confirmed'] == False)):
-							self.overload_fault_flags['suspected'] = True
-							self.overload_fault_flags['confirmed'] = False
-							self.overload_fault_flags['start_time'] = time.time()
-						elif ((self.overload_fault_flags['suspected'] == True) and (self.overload_fault_flags['confirmed'] == False)):
-							if (time.time() - self.overload_fault_flags['start_time']) > self.device_parameter_defaults['overload_fault_threshold_seconds']:
-								self.overload_fault_flags['confirmed'] = True
-								self.mq_back_to_front.put((2, 'Overload_fault_start'))
-					else:
-						if ((self.overload_fault_flags['suspected'] == True) and (self.overload_fault_flags['confirmed'] == False)):
-							self.overload_fault_flags['suspected'] = False
-						elif ((self.overload_fault_flags['suspected'] == True) and (self.overload_fault_flags['confirmed'] == True)):
-							self.overload_fault_flags['suspected'] = False
-							self.overload_fault_flags['confirmed'] = False
-							self.mq_back_to_front.put((2, 'Overload_fault_end'))
+				#~# Check for peltier module overload fault start/end and update front end.
+				#~if self.mode != 'idle':
+					#~if (((self.throttle_setting > 95.0) and (self.temperature_rates['1st_derivative'] > 0.0)) or ((self.throttle_setting < -95.0) and (self.temperature_rates['1st_derivative'] < 0.0))):
+						#~if ((self.overload_fault_flags['suspected'] == False) and (self.overload_fault_flags['confirmed'] == False)):
+							#~self.overload_fault_flags['suspected'] = True
+							#~self.overload_fault_flags['confirmed'] = False
+							#~self.overload_fault_flags['start_time'] = time.time()
+						#~elif ((self.overload_fault_flags['suspected'] == True) and (self.overload_fault_flags['confirmed'] == False)):
+							#~if (time.time() - self.overload_fault_flags['start_time']) > self.device_parameter_defaults['overload_fault_threshold_seconds']:
+								#~self.overload_fault_flags['confirmed'] = True
+								#~self.mq_back_to_front.put((2, 'Overload_fault_start'))
+					#~else:
+						#~if ((self.overload_fault_flags['suspected'] == True) and (self.overload_fault_flags['confirmed'] == False)):
+							#~self.overload_fault_flags['suspected'] = False
+						#~elif ((self.overload_fault_flags['suspected'] == True) and (self.overload_fault_flags['confirmed'] == True)):
+							#~self.overload_fault_flags['suspected'] = False
+							#~self.overload_fault_flags['confirmed'] = False
+							#~self.mq_back_to_front.put((2, 'Overload_fault_end'))
 						
 		return comms_success_flag
 	
@@ -269,7 +285,7 @@ class CoolerChannel():
 		elif most_recent_message[0] == 'StopLogging':
 			if self.logging_flag == True:
 				self.ShutdownLogger()
-				if self.video_enabled_flag == True:
+				if ((self.video_enabled_flag == True) and (self.force_video_off == False)):
 					self.StopVideo()
 		elif most_recent_message[0] == 'SetTimeStep':
 			self.time_step = float(most_recent_message[1])
@@ -284,6 +300,7 @@ class CoolerChannel():
 			self.DisableTCCalibration()
 		elif most_recent_message[0] == 'CalibrationOn':
 			self.EnableTCCalibration()
+			self.LoadTempLimits()
 		elif most_recent_message[0] == 'Off':
 			self.mq_back_to_front.put((2, 'Set_mode_label', 'Idle'))
 			self.setpoint_flag = False
@@ -389,6 +406,26 @@ class CoolerChannel():
 			pass
 		print('Channel ' + str(self.channel_id) + ' video logger shut down.')
 	
+	def LoadTempLimits(self):
+		print("-----------------------------------------------------------------------------------")
+		print('Loading calibrated temperature limits...')
+		file_exists = os.path.isfile(self.device_parameter_defaults['calibrated_temp_limits_filepath'][self.channel_id])
+		if file_exists:
+			with open(self.device_parameter_defaults['calibrated_temp_limits_filepath'][self.channel_id], 'r') as temp_limit_file:
+				calibrated_max_temp_limit = float(temp_limit_file.readline())
+				calibrated_min_temp_limit = float(temp_limit_file.readline())
+			self.temperature_limits['max'] = calibrated_max_temp_limit
+			self.temperature_limits['min'] = calibrated_min_temp_limit
+			print('Calibrated temperature limit found:')
+			print('    Max = ' + '{:0.2f}'.format(calibrated_max_temp_limit) + ' deg C')
+			print('    Min = ' + '{:0.2f}'.format(calibrated_min_temp_limit) + ' deg C')
+			self.mq_back_to_front.put((2, 'Set_temp_limits', '{:0.2f}'.format(calibrated_max_temp_limit), '{:0.2f}'.format(calibrated_min_temp_limit)))
+		else:
+			print('No calibrated minimum temperature limit found, defaulting to:')
+			print('    Max = ' + str(self.temperature_limits['max']) + ' deg C')
+			print('    Min = ' + str(self.temperature_limits['min']) + ' deg C')
+		print("-----------------------------------------------------------------------------------")
+	
 	def LoadCalibration(self, identity_string, calibration_path):
 		print("-----------------------------------------------------------------------------------")
 		print('Loading calibration coefficients for ' + identity_string + ':')
@@ -413,12 +450,14 @@ class CoolerChannel():
 	def EnableTCCalibration(self):
 		# Load the thermocouple calibration coefficients.
 		self.tc_calibration_coeffs = self.LoadCalibration('Channel ' + str(self.channel_id) + ' internal thermocouple', self.device_parameter_defaults['tc_calibration_coeffs_filepath'][self.channel_id])
+		self.event_back_to_front['calibration_zeroed_flag'].clear()
 	
 	def DisableTCCalibration(self):
 		print("-----------------------------------------------------------------------------------")
 		print('Disabling calibration of ' + str(self.channel_id) + ' internal thermocouple.')
 		print("-----------------------------------------------------------------------------------")
 		self.tc_calibration_coeffs = [1.0, 0.0]	
+		self.event_back_to_front['calibration_zeroed_flag'].set()
 	
 	def SwitchToSetpointMode(self, new_setpoint):
 		self.mq_back_to_front.put((2, 'Set_mode_label', 'Setpoint = ' + str(new_setpoint) + ' deg C.'))
@@ -440,6 +479,8 @@ class CoolerChannel():
 		self.ramping_flag = False
 		if ((self.force_video_off == False) and (self.video_enabled_flag == True) and (self.log_video_split_flag == True) and (self.logging_flag == True)):
 			self.SwitchVideoLogPath(self.base_log_path + self.mode + '/')
+		self.rolling_gradient = RollingGradient(window_width = 10, first_sample = [self.temperature, self.current_time])
+		self.rolling_gradient_start_timestamp = self.current_time
 	
 	def SwitchToRampMode(self, profile_repeats, log_end_on_profile_end, profile_path, profile_table):
 		self.setpoint_flag = True
@@ -452,3 +493,51 @@ class CoolerChannel():
 			print(message_to_front_end[1])
 		if ((self.force_video_off == False) and (self.logging_flag == True) and (self.video_enabled_flag == True) and (ramp_state_change[0] == True) and (self.log_video_split_flag == True)):
 			self.SwitchVideoLogPath(self.base_log_path + ramp_state_change[1] + '/')
+
+class RollingGradient():
+	def __init__ (self, window_width, first_sample):
+		self.samples = [[0.0, 0.0] for i in range(window_width)]
+		self.samples[0] = first_sample
+		self.number_of_samples = 1
+	
+	def AddSample(self, sample):
+		if self.number_of_samples < len(self.samples):
+			self.number_of_samples += 1
+		for i in range(self.number_of_samples - 1, 0, -1):
+			self.samples[i] = self.samples[i - 1]
+		self.samples[0] = sample		
+		temps = np.array([self.samples[i][0] for i in range(self.number_of_samples)])
+		times = np.array([self.samples[i][1] for i in range(self.number_of_samples)])
+		fit_coeffs = np.polyfit(times, temps, 1)
+		gradient = fit_coeffs[0]
+		return gradient
+		
+#~class RollingAverage():
+	#~def __init__ (self, window_width):
+		#~self.number_of_samples = 0
+		#~self.samples = [0.0 for i in range(window_width)]
+	
+	#~def GetAverage(self):
+		#~return sum(self.samples) / len(self.samples)
+	
+	#~def AddSample(self, sample):
+		#~if self.number_of_samples < len(self.samples):
+			#~self.number_of_samples += 1
+		#~for i in range(self.number_of_samples - 1, 0, -1):
+			#~self.samples[i] = self.samples[i - 1]
+		#~self.samples[0] = float(sample)
+		#~return sum(self.samples[0:self.number_of_samples]) / self.number_of_samples
+
+#~class FiFo():
+	#~def __init__ (self, buffer_size):
+		#~self.number_of_samples = 0
+		#~self.samples = [0.0 for i in range(buffer_size)]
+	
+	#~def AddSample(self, sample):
+		#~if self.number_of_samples < len(self.samples):
+			#~self.number_of_samples += 1
+		#~for i in range(self.number_of_samples - 1, 0, -1):
+			#~self.samples[i] = self.samples[i - 1]
+		#~self.samples[0] = float(sample)
+		#~return self.samples[self.number_of_samples - 1]
+		
