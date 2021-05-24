@@ -113,7 +113,7 @@ class DropAssayWidget():
 					repeat_poll_flag = True
 			elif self.mode == 3:
 				# Waiting for event_back_to_front to be clear()ed by the backend when we hit room temp...
-				if self.event_back_to_front.is_set() == False:
+				if self.event_back_to_front['ramp_running_flag'].is_set() == False:
 					self.action_button_next.configure(state = NORMAL)
 					self.SetDisplay(4)
 					self.mode = 4
@@ -124,7 +124,7 @@ class DropAssayWidget():
 				repeat_poll_flag = True
 			elif self.mode == 5:
 				# Waiting for event_back_to_front to be clear()ed by the backend when we hit the end of the ramp...
-				if self.event_back_to_front.is_set() == False:
+				if self.event_back_to_front['ramp_running_flag'].is_set() == False:
 					self.action_button_abort.configure(state = NORMAL)
 					self.action_button_next.configure(text = "Next Assay")
 					self.SetDisplay(6);
@@ -152,7 +152,7 @@ class DropAssayWidget():
 			success, room_temp, error_message = self.ValidateRoomTemperature(room_temp)
 			if success == True:	
 				self.assay_parameters['room_temp'] = room_temp
-				self.event_back_to_front.set()
+				self.event_back_to_front['ramp_running_flag'].set()
 				self.mq_front_to_back.put(('Ramp', 1, False, None, [['setpoint', self.assay_parameters['room_temp']]]))
 				self.SetDisplay(1)
 				self.mode = 1
@@ -199,7 +199,7 @@ class DropAssayWidget():
 		elif self.mode == 4:
 			self.action_button_next.configure(text = "Finish assay")
 			self.action_button_abort.configure(state = DISABLED)
-			self.event_back_to_front.set()
+			self.event_back_to_front['ramp_running_flag'].set()
 			self.mq_front_to_back.put(('Ramp', 1, True, None, [['ramp', self.assay_parameters['start_temp'], self.assay_parameters['end_temp'], self.assay_parameters['ramp_rate']]]))
 			self.mq_front_to_back.put(('StartLogging', self.assay_parameters['log_path'], False, False))
 			self.SetDisplay(5);
@@ -209,7 +209,7 @@ class DropAssayWidget():
 			self.mq_front_to_back.put(('StopLogging',))
 			# Cancel the ramp if it's running by turning the stage 'off'.
 			self.mq_front_to_back.put(('SetPoint', self.assay_parameters['room_temp']))
-			self.event_back_to_front.clear()
+			self.event_back_to_front['ramp_running_flag'].clear()
 			self.action_button_abort.configure(state = NORMAL)
 			self.action_button_next.configure(text = "Next Assay")
 			self.SetDisplay(6);
