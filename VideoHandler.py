@@ -216,26 +216,11 @@ class VideoHandler():
 	
 	def AutoFocusOff(self):
 		print('Autofocus OFF.')
-		if os.name == 'posix':
-			#~os.system('v4l2-ctl -c focus_auto=0 -d ' + str(self.video_device_number))
-			self.capture_object.set(cv2.CAP_PROP_AUTOFOCUS, 0)
-		elif os.name == 'nt':
-			#~os.chdir('CameraPrefsOff')
-			#~os.system('CameraPrefs.exe')
-			#~os.chdir('..')
-			self.capture_object.set(cv2.CAP_PROP_AUTOFOCUS, 0)
+		self.capture_object.set(cv2.CAP_PROP_AUTOFOCUS, 0)
 	
 	def AutoFocusOn(self):
 		print('Autofocus ON.')
-		if os.name == 'posix':
-			#~os.system('v4l2-ctl -c focus_auto=1 -d ' + str(self.video_device_number))
-			self.capture_object.set(cv2.CAP_PROP_AUTOFOCUS, 0)
-		elif os.name == 'nt':
-			#~os.chdir('CameraPrefsOn')
-			#~os.system('CameraPrefs.exe')
-			#~print('If autofocus not on, it can be turned back on via the Microsoft Lifecam Utilities found via the Start menu.')
-			#~os.chdir('..')
-			self.capture_object.set(cv2.CAP_PROP_AUTOFOCUS, 0)
+		self.capture_object.set(cv2.CAP_PROP_AUTOFOCUS, 1)
 	
 	def CreatePath(self, path):
 		if not os.path.exists(path):
@@ -251,8 +236,12 @@ class VideoHandler():
 		time.sleep(0.2)
 		
 		print('Attempting to connect to video source...')
-		#~self.capture_object = cv2.VideoCapture(video_device_number, cv2.CAP_V4L2)
-		self.capture_object = cv2.VideoCapture(video_device_number, cv2.CAP_DSHOW)
+		
+		if os.name == 'posix':
+			self.capture_object = cv2.VideoCapture(video_device_number, cv2.CAP_V4L2)
+		elif os.name == 'nt':
+			self.capture_object = cv2.VideoCapture(video_device_number, cv2.CAP_DSHOW)
+		
 		if self.capture_object.isOpened():
 			print('Connected to video source.')
 			self.capture_object.set(3, x_dimension)
