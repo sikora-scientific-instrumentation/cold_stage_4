@@ -72,10 +72,10 @@ class CoolerControl():
 			#	Calibration:
 			'tc_calibration_time_step': 0.2,
 			'tc_calibration_logging_rate': 5,
-			'auto_range_max_throttle': 5.0,
+			'auto_range_max_throttle': 100.0,
 			'auto_range_min_cooling_rate_per_min': -1.0,
-			'calibration_fit_polynomial_order': 2,
-			'auto_calibration_temperature_steps': 3,
+			'calibration_fit_polynomial_order': 7,
+			'auto_calibration_temperature_steps': 10,
 			'prt_calibration_coeffs_filepath' : ['./calibrations/*/channel_' + str(i) + '/prt_calibration_coeffs.csv' for i in range(4)],
 			'tc_calibration_temp_data_filepath': ['./calibrations/*/channel_' + str(i) + '/tc_calibration_log_data_TEMP.csv' for i in range(4)],
 			'tc_calibration_final_data_filepath': ['./calibrations/*/channel_' + str(i) + '/tc_calibration_log_data.csv' for i in range(4)],
