@@ -96,6 +96,7 @@ class CalibrationWidget():
 				if self.event_back_to_front['calibration_zeroed_flag'].is_set() == True:
 					self.mode = 1
 					self.event_back_to_front['gradient_detect_flag'].set()
+					print('Determining minimum temperature at which ' + str(self.device_parameter_defaults['auto_range_min_cooling_rate_per_min']) + ' deg C / minute achieveable...')
 					self.mq_front_to_back.put(('Throttle', self.device_parameter_defaults['auto_range_max_throttle']))
 				repeat_poll_flag = True
 			elif self.mode == 1:

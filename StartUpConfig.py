@@ -120,8 +120,8 @@ class StartUpConfig():
 		self.capture_object = cv2.VideoCapture(self.camera_id.get())
 		self.capture_object.set(3, 320)
 		self.capture_object.set(4, 240)
-		
 		self.UpdateVideoPreview()
+		
 		self.ScanForDevices()
 		self.window.mainloop()
 		
@@ -161,11 +161,12 @@ class StartUpConfig():
 		
 	def UpdateVideoPreview(self):
 		ret, capture = self.capture_object.read()
-		colour_corrected_frame_array = cv2.cvtColor(capture, cv2.COLOR_BGR2RGB)
-		colour_corrected_image = Image.fromarray(colour_corrected_frame_array)
-		self.colour_corrected_tk_image = ImageTk.PhotoImage(colour_corrected_image)
-		self.video_panel.configure(image = self.colour_corrected_tk_image)
-		self.video_panel.image = self.colour_corrected_tk_image
+		if ret:
+			colour_corrected_frame_array = cv2.cvtColor(capture, cv2.COLOR_BGR2RGB)
+			colour_corrected_image = Image.fromarray(colour_corrected_frame_array)
+			self.colour_corrected_tk_image = ImageTk.PhotoImage(colour_corrected_image)
+			self.video_panel.configure(image = self.colour_corrected_tk_image)
+			self.video_panel.image = self.colour_corrected_tk_image
 		self.after_id_video = self.window.after(250, self.UpdateVideoPreview)
 		
 	def VideoCallBack(self, *args):
