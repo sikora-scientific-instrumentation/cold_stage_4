@@ -81,49 +81,40 @@ class VideoHandler():
 			
 			if self.video_fault_flag == False:
 				try:
-					#ret = self.capture_object.grab()
-					ret, self.im = self.capture_object.read()
+					# Previously, I used capture_object.grab() to 'grab' a frame from the internal buffer without decoding it,
+					# then called .retrieve() to decode the last .grab()bed frame when we wanted to save one. However, I saw a comment
+					# on stackoverflow (https://stackoverflow.com/a/54577746) that suggested that inspection of the underlying code
+					# suggested that it is not guaranteed that .grab() actually clears the buffer. On Windows it looked like we got a lot
+					# of extra lag, so I suspect that it does clear the buffer on Linux but not on Windows. I tried instead using .read()
+					# which definitely clears the buffer when it gets a frame, and this seems to have solved the lag problem without any
+					# noticable overhead.
+					success, self.captured_frame = self.capture_object.read()
 				except:
-					ret = False
+					success = False
 			else:
-				ret = False
+				success = False
 			self.capture_timestamp = time.time()
 			
-			if ((ret == False) and (self.video_fault_flag == False)):
+			if ((success == False) and (self.video_fault_flag == False)):
 				self.video_fault_flag = True
 				self.event_vlogger_fault.set()
 			
-			if self.logging == False:
+			if ((self.logging == False) and (self.video_fault_flag == False)):
 				# If we aren't logging then we are in 'live view' mode which we run at ~4 Hz.
 				if time.time() - frontend_timestamp > 0.25:
 					frontend_timestamp = time.time()
-					#~if self.video_fault_flag == False:
-						#~try:
-							#~ret, capture = self.capture_object.retrieve()
-						#~except:
-							#~ret = False
-					#~else:
-						#~ret = False
-					ret = True
-					capture = self.im
-					
-					if ret == True:
-						rgb_capture = cv2.cvtColor(capture, cv2.COLOR_BGR2RGB)
-						rgb_image = Image.fromarray(rgb_capture)
-						text = [time.strftime("%Y/%m/%d %H:%M:%S %Z", time.localtime())]
-						if self.simulation_flag == True:
-							text.append('SIMULATION RUNNING!')
-						text_spacing = 12
-						draw_text = ImageDraw.Draw(rgb_image)
-						offset = 0
-						for i, row in enumerate(text):
-							draw_text.text((0, offset), text[i], font = self.text_font, fill = "#0000FF")
-							offset += text_spacing
-						self.mq_vlogger_to_front.put(rgb_image)
-					else:
-						if self.video_fault_flag == False:
-							self.event_vlogger_fault.set()
-							self.video_fault_flag = True
+					rgb_capture = cv2.cvtColor(self.captured_frame, cv2.COLOR_BGR2RGB)
+					rgb_image = Image.fromarray(rgb_capture)
+					text = [time.strftime("%Y/%m/%d %H:%M:%S %Z", time.localtime())]
+					if self.simulation_flag == True:
+						text.append('SIMULATION RUNNING!')
+					text_spacing = 12
+					draw_text = ImageDraw.Draw(rgb_image)
+					offset = 0
+					for i, row in enumerate(text):
+						draw_text.text((0, offset), text[i], font = self.text_font, fill = "#0000FF")
+						offset += text_spacing
+					self.mq_vlogger_to_front.put(rgb_image)
 			
 			# We need to check the message queue from the back end for commands:
 			try:
@@ -154,8 +145,8 @@ class VideoHandler():
 					self.capture_object.set(4, self.image_y_dimension)
 					print('Video capture resolution changed to ' + str(last_command[1]) + 'x' + str(last_command[2]))
 				elif last_command[0] == 'Go':
-					if self.logging == True:
-						self.Capture(timestamp = self.capture_timestamp, frame_params = last_command[1])
+					if ((self.logging == True) and (self.video_fault_flag == False)):
+						self.Capture(capture = self.captured_frame, timestamp = self.capture_timestamp, frame_params = last_command[1])
 		
 		# Try and release the video capture device cleanly.
 		try:
@@ -171,52 +162,38 @@ class VideoHandler():
 		# Set vlogger mpevent to indicate videologger has been shut down.
 		self.event_vlogger_fault.clear()
 		
-	def Capture(self, timestamp, frame_params):
+	def Capture(self, capture, timestamp, frame_params):
 		print('Image timestamp: ' + str(timestamp) + '   Step timestamp: ' + str(frame_params['timestamp']))
-		#~if self.video_fault_flag == False:
-			#~try:
-				#~ret, capture = self.capture_object.retrieve()
-			#~except:
-				#~ret = False
-		#~else:
-			#~ret = False
-		ret = True
-		capture = self.im
+		# If we are storing a frame, put the aquisition time (temp_timestamp) on the timestamp
+		# queue, then put the 'canning' time on the timestamp queue as the end of aquisition.
+		if self.timing_flag:
+			self.mq_timestamp.put([4, timestamp])
+			self.mq_timestamp.put([5, time.time()])
 		
-		if ret == True:
-			# If we are storing a frame, put the aquisition time (temp_timestamp) on the timestamp
-			# queue, then put the 'canning' time on the timestamp queue as the end of aquisition.
-			if self.timing_flag:
-				self.mq_timestamp.put([4, timestamp])
-				self.mq_timestamp.put([5, time.time()])
-			
-			if self.timing_flag:
-				self.mq_timestamp.put([6, time.time()])
-				# Lastly, put the timestamp terminator for this timestep.
-				self.mq_timestamp.put([0,])
-			
-			rgb_capture = cv2.cvtColor(capture, cv2.COLOR_BGR2RGB)
-			rgb_image = Image.fromarray(rgb_capture)
-			
-			text = [time.strftime("%Y/%m/%d %H:%M:%S %Z", time.localtime()), '#         : ' + frame_params['index'], 'T (deg C) : ' + frame_params['temp'], 'SP (deg C): ' + frame_params['setpoint']]
-			if self.simulation_flag == True:
-				text.append('SIMULATION RUNNING!')
-			text_spacing = 10
-			draw_text = ImageDraw.Draw(rgb_image)
-			offset = 0
-			for i, row in enumerate(text):
-				draw_text.text((0, offset), text[i], font = self.text_font, fill = "#0000FF")
-				offset += text_spacing
-			# We store the frame using a small function spun-out into another thread.
-			# This way, if something else starts thrashing the disk, because we aren't waiting on the disk
-			# access to continue running the event loop here (at least some of the time!), we won't be late
-			# for the next timing event trigger from the back end.
-			frame_canner = Thread.Thread(target = FrameCanner, args = (self.output_path + frame_params['index'] + self.image_file_format, rgb_image))
-			frame_canner.start()
-			self.mq_vlogger_to_front.put(rgb_image)
-		else:
-			self.video_fault_flag = True
-			self.event_vlogger_fault.set()
+		if self.timing_flag:
+			self.mq_timestamp.put([6, time.time()])
+			# Lastly, put the timestamp terminator for this timestep.
+			self.mq_timestamp.put([0,])
+		
+		rgb_capture = cv2.cvtColor(capture, cv2.COLOR_BGR2RGB)
+		rgb_image = Image.fromarray(rgb_capture)
+		
+		text = [time.strftime("%Y/%m/%d %H:%M:%S %Z", time.localtime()), '#         : ' + frame_params['index'], 'T (deg C) : ' + frame_params['temp'], 'SP (deg C): ' + frame_params['setpoint']]
+		if self.simulation_flag == True:
+			text.append('SIMULATION RUNNING!')
+		text_spacing = 10
+		draw_text = ImageDraw.Draw(rgb_image)
+		offset = 0
+		for i, row in enumerate(text):
+			draw_text.text((0, offset), text[i], font = self.text_font, fill = "#0000FF")
+			offset += text_spacing
+		# We store the frame using a small function spun-out into another thread.
+		# This way, if something else starts thrashing the disk, because we aren't waiting on the disk
+		# access to continue running the event loop here (at least some of the time!), we won't be late
+		# for the next timing event trigger from the back end.
+		frame_canner = Thread.Thread(target = FrameCanner, args = (self.output_path + frame_params['index'] + self.image_file_format, rgb_image))
+		frame_canner.start()
+		self.mq_vlogger_to_front.put(rgb_image)
 	
 	def AutoFocusOff(self):
 		print('Autofocus OFF.')
