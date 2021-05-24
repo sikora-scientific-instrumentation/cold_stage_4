@@ -82,10 +82,10 @@ class VideoHandler():
 			if self.video_fault_flag == False:
 				try:
 					ret = self.capture_object.grab()
-					ret = self.capture_object.grab()
-					ret = self.capture_object.grab()
-					ret = self.capture_object.grab()
-					ret = self.capture_object.grab()
+					#~ret = self.capture_object.grab()
+					#~ret = self.capture_object.grab()
+					#~ret = self.capture_object.grab()
+					#~ret = self.capture_object.grab()
 				except:
 					ret = False
 			else:
