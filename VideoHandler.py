@@ -81,6 +81,7 @@ class VideoHandler():
 					self.event_vlogger_fault.clear()
 			
 			if self.video_fault_flag == False:
+				#~capture_timestamp = time.time()
 				try:
 					ret = self.capture_object.grab()
 				except:
@@ -88,11 +89,11 @@ class VideoHandler():
 			else:
 				ret = False
 			
+			capture_timestamp = time.time()
+			
 			if ((ret == False) and (self.video_fault_flag == False)):
 				self.video_fault_flag = True
 				self.event_vlogger_fault.set()
-				
-			capture_timestamp = time.time()
 			
 			if self.logging == False:
 				# If we aren't logging then we are in 'live view' mode which we run at ~4 Hz.
@@ -171,6 +172,7 @@ class VideoHandler():
 		self.event_vlogger_fault.clear()
 		
 	def Capture(self, timestamp, frame_params):
+		print('Image timestamp: ' + str(timestamp) + '   Step timestamp: ' + str(frame_params['timestamp']))
 		if self.video_fault_flag == False:
 			try:
 				ret, capture = self.capture_object.retrieve()

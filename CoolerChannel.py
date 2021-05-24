@@ -206,7 +206,7 @@ class CoolerChannel():
 						if ((self.video_enabled_flag == True) and (self.force_video_off == False)):
 							if self.video_fault_flag == False:
 								if self.event_vlogger_fault.is_set() == False:
-									self.mq_back_to_vlogger.put(('Go', {'index': str(self.logging_counter), 'temp': str(round(self.temperature, 3)), 'setpoint': sp}))
+									self.mq_back_to_vlogger.put(('Go', {'index': str(self.logging_counter), 'temp': str(round(self.temperature, 3)), 'setpoint': sp, 'timestamp': self.current_time}))
 									log_file_video_fault_flag = ''
 								else:
 									log_file_video_fault_flag = 'VIDEO_FAULT'
