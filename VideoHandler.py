@@ -81,11 +81,8 @@ class VideoHandler():
 			
 			if self.video_fault_flag == False:
 				try:
-					ret = self.capture_object.grab()
-					#~ret = self.capture_object.grab()
-					#~ret = self.capture_object.grab()
-					#~ret = self.capture_object.grab()
-					#~ret = self.capture_object.grab()
+					#ret = self.capture_object.grab()
+					ret, self.im = self.capture_object.read()
 				except:
 					ret = False
 			else:
@@ -100,14 +97,16 @@ class VideoHandler():
 				# If we aren't logging then we are in 'live view' mode which we run at ~4 Hz.
 				if time.time() - frontend_timestamp > 0.25:
 					frontend_timestamp = time.time()
-					if self.video_fault_flag == False:
-						try:
-							ret, capture = self.capture_object.retrieve()
-						except:
-							ret = False
-					else:
-						ret = False
-						
+					#~if self.video_fault_flag == False:
+						#~try:
+							#~ret, capture = self.capture_object.retrieve()
+						#~except:
+							#~ret = False
+					#~else:
+						#~ret = False
+					ret = True
+					capture = self.im
+					
 					if ret == True:
 						rgb_capture = cv2.cvtColor(capture, cv2.COLOR_BGR2RGB)
 						rgb_image = Image.fromarray(rgb_capture)
@@ -174,13 +173,15 @@ class VideoHandler():
 		
 	def Capture(self, timestamp, frame_params):
 		print('Image timestamp: ' + str(timestamp) + '   Step timestamp: ' + str(frame_params['timestamp']))
-		if self.video_fault_flag == False:
-			try:
-				ret, capture = self.capture_object.retrieve()
-			except:
-				ret = False
-		else:
-			ret = False
+		#~if self.video_fault_flag == False:
+			#~try:
+				#~ret, capture = self.capture_object.retrieve()
+			#~except:
+				#~ret = False
+		#~else:
+			#~ret = False
+		ret = True
+		capture = self.im
 		
 		if ret == True:
 			# If we are storing a frame, put the aquisition time (temp_timestamp) on the timestamp
