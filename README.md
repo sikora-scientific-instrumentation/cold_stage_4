@@ -1,5 +1,6 @@
-Cold Stage 4 - PRE-RELEASE 1
+Cold Stage 4 - PRE-RELEASE 2
 ----------------------------
+Updated 24/05/2021.
 
 A software program for the control of a solid-state experimental temperature control platform.
 
@@ -36,7 +37,7 @@ Cold Stage 4 is published under the terms of the GNU General Public License vers
 along with Cold Stage 4. If not, see <http://www.gnu.org/licenses/>.
 
 
-(C) 2020 Dr Sebastien Sikora.
+(C) 2021 Dr Sebastien Sikora.
 Sikora Scientific Instrumentation, Ipswich, UK.
 
 
