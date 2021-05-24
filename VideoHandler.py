@@ -163,7 +163,7 @@ class VideoHandler():
 		self.event_vlogger_fault.clear()
 		
 	def Capture(self, capture, timestamp, frame_params):
-		print('Image timestamp: ' + str(timestamp) + '   Step timestamp: ' + str(frame_params['timestamp']))
+		#print('Image timestamp: ' + str(timestamp) + '   Step timestamp: ' + str(frame_params['timestamp']))
 		# If we are storing a frame, put the aquisition time (temp_timestamp) on the timestamp
 		# queue, then put the 'canning' time on the timestamp queue as the end of aquisition.
 		if self.timing_flag:
