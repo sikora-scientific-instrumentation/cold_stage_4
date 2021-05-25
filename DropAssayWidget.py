@@ -229,14 +229,14 @@ class DropAssayWidget():
 			success = False
 			error_message = "Room temperature must be numerical."
 		if success == True:
-			if room_temp > 40.0:
+			if room_temp > self.parent.temperature_limits['max']:
 				success = False
-				room_temp = 40.0
-				error_message = "Room temperature cannot be > 40 deg C."
-			elif room_temp < -40.0:
+				room_temp = self.parent.temperature_limits['max']
+				error_message = "Room temperature cannot be > " + str(self.parent.temperature_limits['max']) + " deg C."
+			elif room_temp < self.parent.temperature_limits['min']:
 				success = False
-				room_temp = -40.0
-				error_message = "Room temperature cannot be < -40 deg C."
+				room_temp = self.parent.temperature_limits['min']
+				error_message = "Room temperature cannot be < " + str(self.parent.temperature_limits['min']) + " deg C."
 		return success, room_temp, error_message
 	
 	def ValidateStartTemperature(self, room_temp, start_temp):
@@ -253,10 +253,10 @@ class DropAssayWidget():
 				success = False
 				start_temp = room_temp
 				error_message = "Start temperature cannot be > Room temperature."
-			elif start_temp < -40.0:
+			elif start_temp < self.parent.temperature_limits['min']:
 				success = False
-				start_temp = -40.0
-				error_message = "Start temperature cannot be < -40 deg C."
+				start_temp = self.parent.temperature_limits['min']
+				error_message = "Start temperature cannot be < " + str(self.parent.temperature_limits['min']) + " deg C."
 		return success, start_temp, error_message
 	
 	def ValidateEndTemperature(self, start_temp, end_temp):
@@ -271,12 +271,12 @@ class DropAssayWidget():
 		if success == True:
 			if end_temp > start_temp:
 				success = False
-				end_temp = -40.0
+				end_temp = start_temp
 				error_message = "End temperature cannot be > Start temperature."
-			elif end_temp < -40.0:
+			elif end_temp < self.parent.temperature_limits['min']:
 				success = False
-				end_temp = -40.0
-				error_message = "End temperature cannot be < -40 deg C."
+				end_temp = self.parent.temperature_limits['min']
+				error_message = "End temperature cannot be < " + str(self.parent.temperature_limits['min']) + " deg C."
 		return success, end_temp, error_message
 	
 	def ValidateRampRate(self, ramp_rate):
@@ -395,7 +395,7 @@ class DropAssayWidget():
 		self.entry_ramp_rate.grid(row = 2, column = 1, sticky = "", pady = (5, 5), padx = (5, 5))
 		self.optionmenu_ramp_rate_units.grid(row = 2, column = 2, sticky = "", pady = (5, 5), padx = (5, 5))
 		self.entry_start_temp.insert(0, "0.0")
-		self.entry_end_temp.insert(0, "-40.0")
+		self.entry_end_temp.insert(0, str(self.parent.temperature_limits['min']))
 		self.entry_ramp_rate.insert(0, "-1.0")
 		self.wizard_frames[1].grid_columnconfigure(0, minsize = 100)
 		self.wizard_frames[1].grid_columnconfigure(1, minsize = 50)
