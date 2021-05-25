@@ -25,7 +25,7 @@ Instructions:
 
 2. Install Anaconda Python 3. It is most likely that you require the 64-bit version, the installer for which can be downloaded [Here](https://repo.anaconda.com/archive/Anaconda3-2021.05-Windows-x86_64.exe). Run the installer and follow the on-screen prompts selecting the default installation options.
 
-3. Create a Python environment that we will configure with the required Python modules. Run Anaconda Prompt via the start-menu. At the prompt, enter `conda create -n coldstage python=3.8`. To activate the new environment, at the prompt enter `conda activate coldstage`.
+3. Create a Python environment that we will configure with the required Python modules. You can think of a Python environment as a virtual workspace within which we can install a particular Python interpreter and selection of Python modules such that they will not interact or conflict with the system Python interpreter and Python modules. The only down-side is that whenever we start the control-software we will need to ensure that the newly created environment is 'activated'. First, run Anaconda Prompt via the start-menu. At the prompt, enter `conda create -n coldstage python=3.8`, which will create a new Python environment (coldstage), and within it install a Python interpreter (>=3.8) and the bare-minimum required modules. To activate the new environment, at the prompt enter `conda activate coldstage`.
 
 4. Install the default Anaconda package selection. At the prompt, enter `conda install anaconda`.
 
@@ -36,7 +36,7 @@ Instructions:
 	* crcmod >=1.7 `conda install -c conda-forge crcmod`
 	* It is also reccommended that you install ipython, a nicer interactive python shell for the command line `conda install ipython` 
 
-6. Obtain the control software from Github. In Windows file explorer, navigate to the folder where you wish to install the control software, right click within the folder and select 'Git Bash Here' to open the Git prompt. At the prompt, enter `git clone https://github.com/sikora-scientific-instrumentation/cold_stage_4` to download the software repository and unpack it at the chosen location.
+6. Obtain the control software from Github. In Windows file explorer, navigate to the folder where you wish to install the control software, right click within the folder and select 'Git Bash Here' to open the Git prompt. At the prompt, enter `git clone https://github.com/sikora-scientific-instrumentation/cold_stage_4.git` to download the software repository and unpack it at the chosen location.
 
 That's it, we're done. To launch the control-software, return to the Anaconda Prompt. If you closed it previously, you will need to reactivate the Python environment that we created previously (At the prompt, enter `conda activate coldstage`). Navigate to the folder containing the control-software, created in step 6, and at the prompt, enter `ipython ColdStage.py`. If you did not install ipython in step 5, instead enter `python ColdStage.py`.
 
