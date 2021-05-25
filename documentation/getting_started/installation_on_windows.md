@@ -40,6 +40,8 @@ Instructions:
 
 That's it, we're done. To launch the control-software, return to the Anaconda Prompt. If you closed it previously, you will need to reactivate the Python environment that we created previously (At the prompt, enter `conda activate coldstage`). Navigate to the folder containing the control-software, created in step 6, and at the prompt, enter `ipython ColdStage.py`. If you did not install ipython in step 5, instead enter `python ColdStage.py`.
 
+**NOTE - You will need to activate the coldstage environment *every* time you launch the Anaconda Prompt.**
+
 In the event that you wish to update your local version of the control-software, launch Git Bash via the right-click menu from within the control-software folder, and at the prompt, enter `git pull origin master`.
 
 
