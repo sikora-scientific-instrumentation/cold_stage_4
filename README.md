@@ -24,7 +24,7 @@ Further to this you will need (may have been installed as part of default packag
 * pillow >=7.2.0  (conda install -c anaconda pillow)
 * crcmod >=1.7  (conda install -c conda-forge crcmod)
 
-Detailed instructions for installation on Windows can be found [here](getting_started/installation_on_windows.md)
+Detailed instructions for installation on Windows can be found [here](documentation/getting_started/installation_on_windows.md)
 
 To Run Cold Stage 4:
 --------------------
