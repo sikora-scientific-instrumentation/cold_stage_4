@@ -45,7 +45,7 @@ That's it, we're done. To launch the control-software, return to the Anaconda Pr
 In the event that you wish to update your local version of the control-software, launch Git Bash via the right-click menu from within the control-software folder, and at the prompt, enter `git pull origin master`.
 
 
-The cold-stage documentation and knowledge repository can be found [here](documentation/documentation.md)
+The cold-stage documentation and knowledge repository can be found [here](../documentation.md)
 
 (C) 2021 Dr Sebastien Sikora.
 Sikora Scientific Instrumentation, Ipswich, UK.
