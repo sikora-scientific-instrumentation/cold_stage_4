@@ -2,9 +2,11 @@
 
 Author: Seb Sikora, March 2021.
 
-Last modified:  Seb Sikora, March 2021.
+Last modified:  Seb Sikora, 25 March 2021.
 
 ## Getting started:
+
+[Installation guide - Microsoft Windows](getting_started/installation_on_windows.md)
 
 [Exploring the cold stage software via the simulation mode](getting_started/getting_started.md)
 
