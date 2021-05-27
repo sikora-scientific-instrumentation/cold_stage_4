@@ -22,7 +22,7 @@ It is recommended that a laboratory recirculating chiller system is used for thi
 
 ### i. Cooling media:
 
-Consult the documentation provided by the recirculating chiller manufacturer for recommended coolant media. 
+Consult the documentation provided by the recirculating chiller manufacturer for recommended coolant media. Typically, either a pre-mix solution (eg [Coolflow DTX](https://hydratech-shop.co.uk/collections/process-cooling-fluids/products/coolflow-dtx) - external link) or a solution of ethylene glycol antifreeze, water and a micro-organism inhibitor (eg []() - external link).
 
 As a guideline, the coolant media must have a freezing point below the coldest part of the chiller mechanism, which can be as low as around - 30 deg C. This can be achieved using standard ethylene glycol anti-freeze ...
 
