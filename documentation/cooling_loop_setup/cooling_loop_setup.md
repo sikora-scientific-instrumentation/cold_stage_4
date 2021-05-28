@@ -60,31 +60,33 @@ A coolant flow-rate of ~
 
 ![Fig.4 - Single cold-stage](images/2_recommended_single_coldstage.png "Fig.4 - Single cold-stage recommended configuration")
 
-Blah...
+An example of the simplest system configuration is shown in Fig.4 above, with the recirculating chiller (1) connected to a single single cold-stage (2). The recirculating chiller fluid-out port is connected to the cold-stage fluid-in port (blue), while the recirculating chiller fluid-in port is connected to the cold-stage fluid-out port (red). In-line valves (3) are placed at both ends of each run of tubing. This is useful when disconnecting either the recirculating chiller or cold-stage from the system, as the corresponding valves can be closed removing the need to completely drain the fluid circuit.
 
-### ii. Two cold-stages:
+### ii. Two or more cold-stages:
 
 ![Fig.5 - Two cold-stages](images/3_recommended_twin_coldstages.png "Fig.5 - Recommended configuration for two cold-stages")
 
-Blah...
-
-### iii. Multiple cold-stages:
+A single recirculating chiller (1) can be connected to two or more cold-stages (2) via the use of Y-couplers (4) to split the flow of coolant, as shown in Figs.4 & .5. In this case, at a minimum in-line valves (3) are required at the ports of each cold-stage for reasons that will be explained in the next section. It is important to try and keep the loop of tubing from the Y-couplers to each cold-stage approximately the same length, otherwise the coolant flow  from the recirculating chiller will be split unevenly between the cold-stages.
 
 ![Fig.6 - Multiple cold-stages](images/4_recommended_n_coldstages.png "Fig.6 - Recommended configuration for multiple cold-stages")
 
-Blah...
+If an odd-number of cold-stages is connected to a single recirculating chiller in this way, the odd-cold-stage will see a higher coolant flow rate than the other two cold-stages that share Y-couplers. The flow can be split between the three cold-stages more evenly by part-closing the in-line valve connected to the fluid-in port of the odd-cold-stage (*).
 
 ---
 
 ## 4. Coolant loop priming guide:
 
+If a single recirculating chiller is connected to multiple cold-stages, it will be necessary to include in-line valves in the cooling circuit, at a minimum one at the fluid-in port of each cold stage. This is due to the requirement to completely purge the air from all branches of the cooling circuit at start-up. If the valves are not included, the flow from the recirculating chiller will follow the 'easiest' branch. Cold-stages connected to the other branches will see zero coolant flow. The procedure to ensure that all branches of the circuit circuit are purged of air is explained below. It assumes that the system has been configured as shown in section 3, above.
+
 ![Fig.7 - Priming cold-stage 1](images/5_twin_coldstages_priming_1.png "Fig.7 - Priming cold-stage 1")
 
-Blah...
+First ensure that both in-line valves at the recirculating chiller, and at cold-stage (A) are OPEN. CLOSE both in-line valves at cold-stage (B). Then, run the recirculating chiller until you see that all the air has been purged from the branch connected to cold-stage (A).
 
 ![Fig.8 - Priming cold-stage 2](images/5_twin_coldstages_priming_2.png "Fig.8 - Priming cold-stage 2")
 
-Blah...
+Next, close both in-line valves at cold-stage (A) and open both in-line valves at cold-stage (B), then run the recirculating chiller until you see that all the air has been purged from the branch connected to cold-stage (B). Finally, open both in-line valves at cold-stage (A). The coolant circuit is now properly primed and the system is ready to run.
+
+If more than two cold-stages are connected, the same process applies. Open the in-line valves at only *one* cold-stage in turn, running the recirculating chiller each time until the air in the branch connected to that cold-stage has been displaced by the coolant.
 
 ---
 
