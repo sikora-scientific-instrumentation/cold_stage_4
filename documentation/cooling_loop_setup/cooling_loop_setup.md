@@ -14,7 +14,7 @@ Operation of the solid-state cold-stage requires a continuous supply of coolant 
 
 ![Fig.1 - Minimal system configuration](images/1_barebones_single_coldstage.png "Fig.1 - Minimal system configuration")
 
-It is recommended that a laboratory recirculating chiller system is used for this purpose, connected to the cold-stage in a closed-loop as shown in it's simplest form in Fig. 1. 
+It is recommended that a laboratory recirculating chiller system is used for this purpose, connected to the cold-stage in a closed-loop as shown in it's simplest form in Fig.1. 
 
 ---
 
@@ -22,17 +22,19 @@ It is recommended that a laboratory recirculating chiller system is used for thi
 
 ### i. Cooling media:
 
-Consult the documentation provided by the recirculating chiller manufacturer for recommended coolant media. Typically, either a pre-mix solution (eg [Coolflow DTX](https://hydratech-shop.co.uk/collections/process-cooling-fluids/products/coolflow-dtx) - external link) or a solution of ethylene glycol antifreeze, water and a corrosion & micro-organism inhibitor (eg []() - external link).
+Consult the documentation provided by the recirculating chiller manufacturer for recommended coolant media. 
 
-As a guideline, the coolant media must have a freezing point below the coldest part of the chiller mechanism, which can be as low as around - 30 deg C. This can be achieved using standard ethylene glycol anti-freeze ...
+In general, the coolant media must have a freezing point below the coldest part of the chiller mechanism, which can be as low as around -30 deg C. Commercial chiller media solutions are recommended, as these are often available in non-toxic, non-corrosive formulations (eg [Coolflow DTX](https://hydratech-shop.co.uk/collections/process-cooling-fluids/products/coolflow-dtx) - external link), which can be mixed in solution with water to the concentration recommended by the manufacturer.
+
+If a traditional antifreeze solution comprising a solution of water and ethylene glycol is used, it is *ESSENTIAL* to include a corrosion-inhibitor additive. You must ensure that the chosen additive is safe for use with aluminium parts & fittings to avoid damaging the cold-stage. Do not use automotive antifreeze formulations.
 
 ### ii. Fluid couplers:
 
 ![Fig.2 - Cold-stage fluid couplers](images/cold-stage_couplers.png "Fig.2 - Cold-stage fluid couplers")
 
-Locking panel-mount coupling body (external link): [rs-online](https://uk.rs-online.com/web/p/hose-couplings/7640699/)
+(Left) Locking panel-mount coupling body (external link): [rs-online](https://uk.rs-online.com/web/p/hose-couplings/7640699/)
 
-Locking in-line coupling insert (external link): [rs-online](https://uk.rs-online.com/web/p/hose-couplings/0138385/)
+(Right) Locking in-line coupling insert (external link): [rs-online](https://uk.rs-online.com/web/p/hose-couplings/0138385/)
 
 Each cold stage is fitted with two locking hose coupling bodies at the front of the instrument. These mate with corresponding coupling inserts
 
