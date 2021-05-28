@@ -4,7 +4,7 @@
 
 Author: Seb Sikora, March 2021.
 
-Last modified:  Seb Sikora, March 2021.
+Last modified:  Seb Sikora, May 2021.
 
 ## Instructions for setting-up the cold-stage recirculating cooling-loop.
 
@@ -22,7 +22,7 @@ It is recommended that a laboratory recirculating chiller system is used for thi
 
 ### i. Cooling media:
 
-Consult the documentation provided by the recirculating chiller manufacturer for recommended coolant media. Typically, either a pre-mix solution (eg [Coolflow DTX](https://hydratech-shop.co.uk/collections/process-cooling-fluids/products/coolflow-dtx) - external link) or a solution of ethylene glycol antifreeze, water and a micro-organism inhibitor (eg []() - external link).
+Consult the documentation provided by the recirculating chiller manufacturer for recommended coolant media. Typically, either a pre-mix solution (eg [Coolflow DTX](https://hydratech-shop.co.uk/collections/process-cooling-fluids/products/coolflow-dtx) - external link) or a solution of ethylene glycol antifreeze, water and a corrosion & micro-organism inhibitor (eg []() - external link).
 
 As a guideline, the coolant media must have a freezing point below the coldest part of the chiller mechanism, which can be as low as around - 30 deg C. This can be achieved using standard ethylene glycol anti-freeze ...
 
@@ -40,7 +40,7 @@ Each cold stage is fitted with two locking hose coupling bodies at the front of 
 
 ![Fig.3 - Fluid valves](images/john_guest_valve.png "Fig.3 - Fluid valves")
 
-Blah...
+Any in-line valves of a suitable bore to fit the chosen tubing can be used (John Guest push-fit valve shown). If push-fit valves are used instead of those with hose-barbs, to avoid leaks it is important to check that the push-fitting is rated to a working pressure higher than the working pressure of the recirculating chiller coolant pump (Consult the documentation provided by the recirculating chiller manufacturer)
 
 ### iv. Cooling capacity (power):
 
@@ -55,6 +55,8 @@ A coolant flow-rate of ~
 ---
 
 ## 3. Recommended system configuration:
+
+Guidelines for cooling loop configuration for one or more cold-stages are show below. In general, it is recommended that the cooling loop be kept as short as practical, and that sharp bends in the tubing are avoided. Long runs of tubing or large numbers of sharp bends increase the total flow resistance of the circuit, which will lead to reduced total coolant flow at a given supply pressure, and a consequent reduction in cold-stage performance.
 
 ### i. Single cold-stage:
 
@@ -86,9 +88,9 @@ If a single recirculating chiller is connected to multiple cold-stages, it will 
 
 ![Fig.8 - Priming cold-stage 2](images/5_twin_coldstages_priming_2.png "Fig.8 - Priming cold-stage 2")
 
-(ii) Next, close both in-line valves at cold-stage (A) and open both in-line valves at cold-stage (B), then run the recirculating chiller until you see that all the air has been purged from the branch connected to cold-stage (B). Finally, open both in-line valves at cold-stage (A). The coolant circuit is now properly primed and the system is ready to run.
+(ii) Next, CLOSE both in-line valves at cold-stage (A) and OPEN both in-line valves at cold-stage (B), then run the recirculating chiller until you see that all the air has been purged from the branch connected to cold-stage (B). Finally, OPEN both in-line valves at cold-stage (A). The coolant circuit is now properly primed and the system is ready to run.
 
-If more than two cold-stages are connected, the same process applies. Open the in-line valves at only *one* cold-stage in turn, running the recirculating chiller each time until the air in the branch connected to that cold-stage has been displaced by the coolant.
+If more than two cold-stages are connected, the same process applies. Open the in-line valves at only *one* cold-stage in turn, running the recirculating chiller each time until the air in the branch connected to that cold-stage has been displaced by the coolant. Once all of the air present in the circuit has been displaced by coolant, all of the in-line valves can be opened and the system is ready to use.
 
 ---
 
