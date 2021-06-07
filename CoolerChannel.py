@@ -1,12 +1,13 @@
 """
 ########################################################################
 #                                                                      #
-#                  Copyright 2020 Sebastien Sikora                     #
+#                  Copyright 2021 Sebastien Sikora                     #
 #                    sikora.scientific@gmail.com                       #
 #                                                                      #
 ########################################################################
 
 	This file is part of Cold Stage 4.
+	PRE RELEASE 3
 
 	Cold Stage 4 is free software: you can redistribute it and/or 
 	modify it under the terms of the GNU General Public License as 
@@ -79,6 +80,7 @@ class CoolerChannel():
 		self.prt_calibration_coeffs = self.LoadCalibration('Channel ' + str(self.channel_id) + ' internal PRT', self.device_parameter_defaults['prt_calibration_coeffs_filepath'][self.channel_id])
 		self.EnableTCCalibration()
 		self.LoadTempLimits()
+		self.calibration_limit = None
 		
 		if self.backend_object.comms_success_flag == True:
 			# Get channel temperature upon instantiation:
@@ -97,7 +99,7 @@ class CoolerChannel():
 					self.pd = Utilities.PIDController(self.time_step, self.pid_coeffs, self.drive_mode)
 					
 					# Instantiate a RampManager object.
-					self.ramp_manager = RampManager.RampManager(self.mode, self.time_step)
+					self.ramp_manager = RampManager.RampManager(self, self.mode, self.time_step)
 					print('Channel ' + str(self.channel_id) + ' initialised.')
 		else:
 			success_flag = False
@@ -176,15 +178,25 @@ class CoolerChannel():
 						else:
 							new_setpoint = self.temperature_limits['min']
 						self.SwitchToSetpointMode(new_setpoint)
-				
-				# If we are cooling under throttle mode, if more than 2 seconds have elapsed sice throttle mode started 
-				# (beginning of rolling gradient calcs) then check the rolling gradient value. If we are cooling at less
-				# than 1 degree/min, we have reached 'max delta t'.
-				if ((self.event_back_to_front['gradient_detect_flag'].is_set() == True) and ((time.time() - self.rolling_gradient_start_timestamp) > 2.0)):
-					rolling_gradient = self.rolling_gradient.AddSample([self.temperature, self.current_time])
-					target_rate_per_second = self.device_parameter_defaults['auto_range_min_cooling_rate_per_min'] / 60.0
-					if rolling_gradient > target_rate_per_second:
-						print('Minimum temperature at which ' + str(self.device_parameter_defaults['auto_range_min_cooling_rate_per_min']) + ' deg C / minute achieveable = ' + '{:0.3f}'.format(self.temperature))
+				# If the gradient_detect_flag *is* set, we are auto-ranging at 100% throttle at the start of auto-calibration. 
+				else:
+					auto_ranging_complete = False
+					# If there is a calibration lower temperature limit, check if we have passed it.
+					if self.calibration_limit is not None:
+						if self.temperature < self.calibration_limit:
+							print('Auto-calibration minimum temperature limit reached.')
+							self.calibration_limit = None
+							auto_ranging_complete = True
+					# If there is no limit or we have not passed it, check if the cooling-rate has fallen below X deg/min.
+					if ((auto_ranging_complete == False) and ((time.time() - self.rolling_gradient_start_timestamp) > 2.0)):
+						rolling_gradient = self.rolling_gradient.AddSample([self.temperature, self.current_time])
+						target_rate_per_second = self.device_parameter_defaults['auto_range_min_cooling_rate_per_min'] / 60.0
+						if rolling_gradient > target_rate_per_second:
+							print('Minimum temperature at which ' + str(self.device_parameter_defaults['auto_range_min_cooling_rate_per_min']) + ' °C / minute achieveable = ' + '{:0.3f}'.format(self.temperature))
+							auto_ranging_complete = True
+					# If we have hit the limit, or slowed below X deg/min rate, write current temperature to temporary file and clear mp
+					# event to signal end of auto-ranging to front end calibration widget.
+					if auto_ranging_complete == True:
 						with open('./min_temperature.tmp', 'w') as temporary_temperature_file:
 							temporary_temperature_file.write('{:0.3f}'.format(self.temperature) + '\n')
 						self.event_back_to_front['gradient_detect_flag'].clear()
@@ -298,9 +310,15 @@ class CoolerChannel():
 			self.mq_back_to_front.put((2, 'New_datum_time', self.datum_time))
 		elif most_recent_message[0] == 'CalibrationOff':
 			self.DisableTCCalibration()
+			self.DisableTempLimits()
 		elif most_recent_message[0] == 'CalibrationOn':
 			self.EnableTCCalibration()
 			self.LoadTempLimits()
+		elif most_recent_message[0] == 'SetCalibrationLimit':
+			if most_recent_message[1] is not None:
+				self.calibration_limit = float(most_recent_message[1])
+			else:
+				self.calibration_limit = most_recent_message[1]
 		elif most_recent_message[0] == 'Off':
 			self.mq_back_to_front.put((2, 'Set_mode_label', 'Idle'))
 			self.setpoint_flag = False
@@ -367,7 +385,7 @@ class CoolerChannel():
 		self.logger_thread = Thread.Thread(target = Logger.Logger, args = (self.mq_back_to_logger, file_path))
 		self.logger_thread.start()
 		print('Logger for channel ' + str(self.channel_id) + ' started...')
-		message_to_logger = 'Time (secs), Frame Number, Setpoint (deg C), TC Temperature (deg C), PRT Temperature (deg C), Coolant Flowrate (L/min)'
+		message_to_logger = 'Time (secs), Frame Number, Setpoint (°C), TC Temperature (°C), PRT Temperature (°C), Coolant Flowrate (L/min)'
 		if self.video_enabled_flag == True:
 			message_to_logger = message_to_logger + ', Video Fault Flag'
 		self.mq_back_to_logger.put((message_to_logger))
@@ -417,14 +435,26 @@ class CoolerChannel():
 			self.temperature_limits['max'] = calibrated_max_temp_limit
 			self.temperature_limits['min'] = calibrated_min_temp_limit
 			print('Calibrated temperature limits found:')
-			print('    Max = ' + '{:0.2f}'.format(calibrated_max_temp_limit) + ' deg C')
-			print('    Min = ' + '{:0.2f}'.format(calibrated_min_temp_limit) + ' deg C')
+			print('    Max = ' + '{:0.2f}'.format(calibrated_max_temp_limit) + ' °C')
+			print('    Min = ' + '{:0.2f}'.format(calibrated_min_temp_limit) + ' °C')
 			self.mq_back_to_front.put((2, 'Set_temp_limits', '{:0.2f}'.format(calibrated_max_temp_limit), '{:0.2f}'.format(calibrated_min_temp_limit)))
 		else:
 			print('No calibrated minimum temperature limits found, defaulting to:')
-			print('    Max = ' + str(self.temperature_limits['max']) + ' deg C')
-			print('    Min = ' + str(self.temperature_limits['min']) + ' deg C')
+			print('    Max = ' + str(self.temperature_limits['max']) + ' °C')
+			print('    Min = ' + str(self.temperature_limits['min']) + ' °C')
 		print("--------------------------------------------------------------------------------")
+	
+	def DisableTempLimits(self):
+		hard_max_limit = self.device_parameter_defaults['max_temperature_limit'][self.channel_id]
+		hard_min_limit = self.device_parameter_defaults['min_temperature_limit'][self.channel_id]
+		print("-----------------------------------------------------------------------------------")
+		print('Temperature limits set to maximum range:')
+		print('    Max = ' + '{:0.2f}'.format(hard_max_limit) + ' °C')
+		print('    Min = ' + '{:0.2f}'.format(hard_min_limit) + ' °C')
+		print("-----------------------------------------------------------------------------------")
+		self.temperature_limits['min'] = hard_min_limit
+		self.temperature_limits['max'] = hard_max_limit
+		self.mq_back_to_front.put((2, 'Set_temp_limits', '{:0.2f}'.format(hard_max_limit), '{:0.2f}'.format(hard_min_limit)))
 	
 	def LoadCalibration(self, identity_string, calibration_path):
 		print("--------------------------------------------------------------------------------")
@@ -460,7 +490,7 @@ class CoolerChannel():
 		self.event_back_to_front['calibration_zeroed_flag'].set()
 	
 	def SwitchToSetpointMode(self, new_setpoint):
-		self.mq_back_to_front.put((2, 'Set_mode_label', 'Setpoint = ' + str(new_setpoint) + ' deg C.'))
+		self.mq_back_to_front.put((2, 'Set_mode_label', 'Setpoint = ' + str(new_setpoint) + ' °C.'))
 		self.mode = 'setpoint'
 		self.setpoint_flag = True
 		self.setpoint = new_setpoint

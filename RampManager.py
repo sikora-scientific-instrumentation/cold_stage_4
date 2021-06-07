@@ -1,12 +1,13 @@
 """
 ########################################################################
 #                                                                      #
-#                  Copyright 2020 Sebastien Sikora                     #
+#                  Copyright 2021 Sebastien Sikora                     #
 #                    sikora.scientific@gmail.com                       #
 #                                                                      #
 ########################################################################
 
 	This file is part of Cold Stage 4.
+	PRE RELEASE 3
 
 	Cold Stage 4 is free software: you can redistribute it and/or 
 	modify it under the terms of the GNU General Public License as 
@@ -27,7 +28,8 @@
 import csv
 
 class RampManager():
-	def __init__ (self, mode, time_step):
+	def __init__ (self, parent, mode, time_step):
+		self.parent = parent
 		self.mode = mode
 		self.time_step = time_step
 		self.ramp = None
@@ -69,7 +71,7 @@ class RampManager():
 			new_setpoint = self.setpoint
 			hold_duration = float(new_stage[1])
 			self.hold = Hold(self.time_step, hold_duration)
-			message = [True, 'Holding at ' + str(round(new_setpoint, 3)) + ' deg C for ' + str(hold_duration) + ' seconds.']
+			message = [True, 'Holding at ' + str(round(new_setpoint, 3)) + ' °C for ' + str(hold_duration) + ' seconds.']
 		elif new_stage[0] == 'ramp':
 			ramp_start_temperature = float(new_stage[1])
 			ramp_end_temperature = float(new_stage[2])
@@ -90,18 +92,18 @@ class RampManager():
 				threshold = 10.0 * abs(self.ramp.increment)
 			if ((self.last_temperature <= (ramp_start_temperature + threshold)) and (self.last_temperature >= (ramp_start_temperature - threshold))):
 				new_mode = 'ramping'
-				message = [True, 'Ramping from ' + str(ramp_start_temperature) + ' deg C to ' + str(ramp_end_temperature) + ' deg C at ' + str(round(ramp_rate, 3)) + ' deg/sec.']
+				message = [True, 'Ramping from ' + str(round(ramp_start_temperature, 3)) + ' °C to ' + str(round(ramp_end_temperature, 3)) + ' °C at ' + str(round(ramp_rate, 3)) + ' °/sec.']
 			else:
 				new_mode = 'precooling'
-				message = [True, 'Pre-cooling to ' + str(new_setpoint) + ' deg C.']
+				message = [True, 'Pre-cooling to ' + str(round(new_setpoint, 3)) + ' °C.']
 		elif new_stage[0] == 'setpoint':
 			new_mode = 'profile_setpoint'
 			new_setpoint = float(new_stage[1])
-			message = [True, 'Adjusting to ' + str(new_setpoint) + ' deg C.']
+			message = [True, 'Adjusting to ' + str(round(new_setpoint, 3)) + ' °C.']
 		elif new_stage[0] == 'completed':
 			new_mode = 'setpoint'
 			new_setpoint = self.setpoint
-			message = [True, 'End of profile, holding at ' + str(round(new_setpoint, 3)) + ' deg C.']
+			message = [True, 'End of profile, holding at ' + str(round(new_setpoint, 3)) + ' °C.']
 		self.current_stage += 1
 		print('Switching to mode: ' + str(new_mode))
 		ramp_state_change = [True, new_mode + '_' + str(self.repeat_count) + '_' + str(self.current_stage)]
@@ -123,7 +125,7 @@ class RampManager():
 				threshold = 10.0 * abs(self.ramp.increment)
 			if ((self.last_temperature <= (self.ramp.start_temperature + threshold)) and (self.last_temperature >= (self.ramp.start_temperature - threshold))):
 				self.mode = 'ramping'
-				ramp_message = 'Ramping from ' + str(self.ramp.start_temperature) + ' deg C to ' + str(self.ramp.end_temperature) + ' deg C at ' + str(round(self.ramp.rate, 3)) + ' deg/sec.'
+				ramp_message = 'Ramping from ' + str(round(self.ramp.start_temperature, 3)) + ' °C to ' + str(round(self.ramp.end_temperature, 3)) + ' °C at ' + str(round(self.ramp.rate, 3)) + ' °/sec.'
 				ramp_state = self.mode + '_' + str(self.repeat_count) + '_' + str(self.current_stage)
 				message_to_front_end = [True, ramp_message]
 				ramp_state_change = [True, ramp_state]
@@ -142,10 +144,11 @@ class RampManager():
 			if (((self.last_temperature >= self.setpoint) and (current_temperature <= self.setpoint)) or ((self.last_temperature <= self.setpoint) and (current_temperature >= self.setpoint))):
 				self.mode, self.setpoint, message_to_front_end, ramp_state_change = self.__NextStage()
 		self.last_temperature = current_temperature
-		if self.setpoint < -40.0:
-			self.setpoint = 40.0
-		elif self.setpoint > 40.0:
-			self.setpoint = 40.0
+		# Prevent ramp manager from setting setpoint outside current limits.
+		if self.setpoint < self.parent.temperature_limits['min']:
+			self.setpoint = self.parent.temperature_limits['min']
+		elif self.setpoint > self.parent.temperature_limits['max']:
+			self.setpoint = self.parent.temperature_limits['max']
 		return self.mode, self.setpoint, message_to_front_end, ramp_state_change
 	
 	def SetTimeStep(self, time_step):

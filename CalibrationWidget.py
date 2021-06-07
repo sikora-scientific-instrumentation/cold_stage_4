@@ -1,12 +1,13 @@
 """
 ########################################################################
 #                                                                      #
-#                  Copyright 2020 Sebastien Sikora                     #
+#                  Copyright 2021 Sebastien Sikora                     #
 #                    sikora.scientific@gmail.com                       #
 #                                                                      #
 ########################################################################
 
 	This file is part of Cold Stage 4.
+	PRE RELEASE 3
 
 	Cold Stage 4 is free software: you can redistribute it and/or 
 	modify it under the terms of the GNU General Public License as 
@@ -54,6 +55,8 @@ class CalibrationWidget():
 		self.tc_calibration_coeffs_filepath = self.device_parameter_defaults['tc_calibration_coeffs_filepath'][self.channel_id]
 		self.temp_limit_filepath = self.device_parameter_defaults['calibrated_temp_limits_filepath'][self.channel_id]
 		
+		self.calibration_temperature_limits = {'max': self.device_parameter_defaults['max_temperature_limit'][self.channel_id], 'min': self.device_parameter_defaults['min_temperature_limit'][self.channel_id]}
+		self.calibration_limit = None
 		self.cancelled_flag = False
 		self.window_open_flag = False
 		
@@ -95,14 +98,24 @@ class CalibrationWidget():
 				# We are waiting for confirmation that the backend has zeroed the calibration coeffs.
 				if self.event_back_to_front['calibration_zeroed_flag'].is_set() == True:
 					self.mode = 1
-					self.event_back_to_front['gradient_detect_flag'].set()
-					print('Determining minimum temperature at which ' + str(self.device_parameter_defaults['auto_range_min_cooling_rate_per_min']) + ' deg C / minute achieveable...')
-					self.mq_front_to_back.put(('Throttle', self.device_parameter_defaults['auto_range_max_throttle']))
 				repeat_poll_flag = True
 			elif self.mode == 1:
+				# We are waiting for the user to start the auto-calibration.
+				# When they click start, self.mode will be set = 2.
+				repeat_poll_flag = True
+			elif self.mode == 2:
+				# We set the gradient_detect_flag mp event to turn off the back end temp limits and turn on the temperature
+				# gradient detector, send a command to the back end to set the lower calibration limit (either a temperature or None)
+				# and then send the command to set the cold-stage to 100% throttle mode to begin the auto-ranging.
+				self.event_back_to_front['gradient_detect_flag'].set()
+				print('Determining minimum temperature at which ' + str(self.device_parameter_defaults['auto_range_min_cooling_rate_per_min']) + ' °C / minute achieveable...')
+				self.mq_front_to_back.put(('SetCalibrationLimit', self.calibration_limit))
+				self.mq_front_to_back.put(('Throttle', self.device_parameter_defaults['auto_range_max_throttle']))
+				self.mode = 3
+				repeat_poll_flag = True
+			elif self.mode == 3:
 				# We are waiting to hit ~1k/min rate at 100% throttle.
 				if self.event_back_to_front['gradient_detect_flag'].is_set() == False:
-					self.mode = 2
 					with open('./min_temperature.tmp', 'r') as temporary_temperature_file:
 						minimum_temperature_reached = float(temporary_temperature_file.readline())
 					calibration_table = self.GenerateCalibrationTable(minimum_temperature_reached, self.temperature_steps)
@@ -111,8 +124,9 @@ class CalibrationWidget():
 					# Start logging.
 					self.mq_front_to_back.put(('StartLogging', self.tc_calibration_temp_data_filepath, True, True))
 					self.event_back_to_front['ramp_running_flag'].set()
+					self.mode = 4
 				repeat_poll_flag = True
-			elif self.mode == 2:
+			elif self.mode == 4:
 				# We're polling event_back_to_front until it's been cleared by the backend to say that the logger thread has
 				# been stopped at the end of the calibration ramp profile.
 				if self.event_back_to_front['ramp_running_flag'].is_set() == False:
@@ -128,6 +142,40 @@ class CalibrationWidget():
 	def PassFunc(self):
 		pass
 	
+	def ClickStart(self):
+		if self.ClicksAreActive() == True:
+			self.Start()
+	
+	def Start(self):
+		if self.mode == 1:
+			start_now = False
+			if self.calibration_limit_flag.get() == True:
+				# If the calibration limit checkbox is set, we validate the entry. If it can't be turned into a float or is outside the limits
+				# we show a generic warning window and clear the entry field.
+				succeded = False
+				try:
+					limit_entered = float(self.entry_calibration_limit.get())
+					if ((limit_entered > self.calibration_temperature_limits['max']) or (limit_entered < self.calibration_temperature_limits['min'])):
+						succeded = False
+					else:
+						succeded = True
+				except:
+					succeded = False
+				if succeded == False:
+					self.parent.GenerateGenericWarningWindow("Parameter entry error", "Temperature limit must be floating value between " + str(self.calibration_temperature_limits['max']) + " and " + str(self.calibration_temperature_limits['min']) + " °C.")
+					self.entry_calibration_limit.delete(0, "end")
+				else:
+					self.calibration_limit = limit_entered
+					start_now = True
+			else:
+				self.calibration_limit = None
+				start_now = True
+			if start_now == True:
+				self.button_start.config(state = tk.DISABLED)
+				self.entry_calibration_limit.config(state = tk.DISABLED)
+				self.checkButton_calibration_limit.config(state = tk.DISABLED)
+				self.mode = 2
+		
 	def ClickCancel(self):
 		if self.ClicksAreActive() == True:
 			self.Cancel()
@@ -283,22 +331,37 @@ class CalibrationWidget():
 	def GenerateCalibrationWidget(self):
 		self.widget_window = tk.Toplevel(self.root_tk)
 		self.widget_window.title("Thermocouple Calibration")
-		self.widget_window.geometry("300x100")
+		self.widget_window.geometry("300x120")
 		# For the widget window we'll just have it ignore any request to close the widget (with the exception of it's 
 		# destroy()/quit() method, etc...).
 		self.widget_window.protocol("WM_DELETE_WINDOW", self.PassFunc)
 		self.widget_window.resizable(False, False)
 		self.widget_window_frame = tk.Frame(self.widget_window, bd = 1, relief = tk.RIDGE)
 		self.widget_window_frame.pack(side = "top", expand = "true", fill = tk.BOTH)
-		self.button_cancel = tk.Button(self.widget_window_frame, text="Cancel", font = ("Arial", 14), command=self.Cancel)
-		self.button_cancel.pack(side = "bottom", expand = "true", fill = tk.BOTH)
+		self.calibration_limit_flag = tk.BooleanVar()
+		self.calibration_limit_flag.set(False)
+		self.checkButton_calibration_limit = tk.Checkbutton(self.widget_window_frame, text = "Apply calibration lower temperature limit (°C)", variable = self.calibration_limit_flag, onvalue = True, offvalue = False, command = self.ToggleCalibrationLimit)
+		self.checkButton_calibration_limit.pack(side = "top", expand = "true", fill = tk.BOTH)
+		self.entry_calibration_limit = tk.Entry(self.widget_window_frame, width = 8, font = ("Arial", 11))
+		self.entry_calibration_limit.insert(0, "-40.0")
+		self.entry_calibration_limit.configure(state = tk.DISABLED)
+		self.entry_calibration_limit.pack(side = "top", expand = "true", fill = tk.BOTH)
+		self.button_start = tk.Button(self.widget_window_frame, text="Start", font = ("Arial", 14), command=self.ClickStart)
+		self.button_start.pack(side = "top", expand = "true", fill = tk.BOTH)
+		self.button_cancel = tk.Button(self.widget_window_frame, text="Cancel", font = ("Arial", 14), command=self.ClickCancel)
+		self.button_cancel.pack(side = "top", expand = "true", fill = tk.BOTH)
 		#~# Route all events to the new widget - In effect prevents user interaction with the parent front end window.
 		#~# Once we 'destroy' this widget, control will be passed back to the parent front end window.
-		#~self.widget_window.grab_set()
 		self.widget_window.lift()
 		self.parent.BindParentClicks(self.parent.top, self.widget_window)
 		if self.parent.video_enabled == True:
 			self.parent.BindParentClicks(self.parent.video_window, self.widget_window)
+	
+	def ToggleCalibrationLimit(self):
+		if self.entry_calibration_limit.cget('state') == tk.DISABLED:
+			self.entry_calibration_limit.config(state = tk.NORMAL)
+		else:
+			self.entry_calibration_limit.config(state = tk.DISABLED)
 	
 	def GenerateCalibrationTable(self, minimum_temperature_reached, steps):
 		temperatures = np.linspace(self.device_parameter_defaults['max_temperature_limit'][self.channel_id], minimum_temperature_reached, steps)

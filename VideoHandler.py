@@ -1,12 +1,13 @@
 """
 ########################################################################
 #                                                                      #
-#                  Copyright 2020 Sebastien Sikora                     #
+#                  Copyright 2021 Sebastien Sikora                     #
 #                    sikora.scientific@gmail.com                       #
 #                                                                      #
 ########################################################################
 
 	This file is part of Cold Stage 4.
+	PRE RELEASE 3
 
 	Cold Stage 4 is free software: you can redistribute it and/or 
 	modify it under the terms of the GNU General Public License as 
@@ -178,7 +179,7 @@ class VideoHandler():
 		rgb_capture = cv2.cvtColor(capture, cv2.COLOR_BGR2RGB)
 		rgb_image = Image.fromarray(rgb_capture)
 		
-		text = [time.strftime("%Y/%m/%d %H:%M:%S %Z", time.localtime()), '#         : ' + frame_params['index'], 'T (deg C) : ' + frame_params['temp'], 'SP (deg C): ' + frame_params['setpoint']]
+		text = [time.strftime("%Y/%m/%d %H:%M:%S %Z", time.localtime()), '#         : ' + frame_params['index'], 'T (°C) : ' + frame_params['temp'], 'SP (°C): ' + frame_params['setpoint']]
 		if self.simulation_flag == True:
 			text.append('SIMULATION RUNNING!')
 		text_spacing = 10

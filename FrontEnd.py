@@ -1,12 +1,13 @@
 """
 ########################################################################
 #                                                                      #
-#                  Copyright 2020 Sebastien Sikora                     #
+#                  Copyright 2021 Sebastien Sikora                     #
 #                    sikora.scientific@gmail.com                       #
 #                                                                      #
 ########################################################################
 
 	This file is part of Cold Stage 4.
+	PRE RELEASE 3
 
 	Cold Stage 4 is free software: you can redistribute it and/or 
 	modify it under the terms of the GNU General Public License as 
@@ -462,7 +463,7 @@ class FrontEnd():
 			self.subplot = self.fig.add_subplot(111)
 		self.subplot.set_title('Channel ' + str(self.channel_id))
 		self.subplot.set_xlabel('Time (seconds)')
-		self.subplot.set_ylabel('Temperature (deg C)')
+		self.subplot.set_ylabel('Temperature (°C)')
 		self.temp_plot, = self.subplot.plot([], [], lw = 2, color = 'red')
 		self.setpoint_plot, = self.subplot.plot([], [], lw = 2, color = 'blue')
 	
@@ -534,7 +535,7 @@ class FrontEnd():
 				self.mq_front_to_back.put(('SetPoint', self.setpoint))
 				self.EnableFrontEndRampControls()
 			except:
-				self.GenerateGenericWarningWindow("Warning", "Setpoint must be numerical between " + str(self.temperature_limits['min']) + " and " + str(self.temperature_limits['max']) + " deg C.")
+				self.GenerateGenericWarningWindow("Warning", "Setpoint must be numerical between " + str(self.temperature_limits['min']) + " and " + str(self.temperature_limits['max']) + " °C.")
 	
 	def SetTimestep(self):
 		if self.ClicksAreActive() == True:
@@ -809,11 +810,11 @@ class FrontEnd():
 		self.label_logging_reading = tkinter.ttk.Label(self.logging_frame, text="OFF", font = ("Arial", 14, 'bold'), justify = "right")
 		self.label_logging_reading.pack(side="right", expand="false")
 		
-		self.label_current_temp_title = tkinter.ttk.Label(self.temperature_frame, text="Temp (deg C)", font = ("Arial", 12), justify = "center")
+		self.label_current_temp_title = tkinter.ttk.Label(self.temperature_frame, text="Temp (°C)", font = ("Arial", 12), justify = "center")
 		self.label_current_temp_title.pack(side="top", expand="true")
 		self.label_current_temp_reading = tkinter.ttk.Label(self.temperature_frame, text="", font = ("Arial", 20, 'bold'), justify = "center")
 		self.label_current_temp_reading.pack(side="top", expand="true")
-		self.label_current_PRT_temp_title = tkinter.ttk.Label(self.temperature_PRT_frame, text="PRT Temp (deg C)", font = ("Arial", 12), justify = "left")
+		self.label_current_PRT_temp_title = tkinter.ttk.Label(self.temperature_PRT_frame, text="PRT Temp (°C)", font = ("Arial", 12), justify = "left")
 		self.label_current_PRT_temp_title.pack(side="left", expand="false")
 		self.label_current_PRT_temp_reading = tkinter.ttk.Label(self.temperature_PRT_frame, text="", font = ("Arial", 12), justify = "right")
 		self.label_current_PRT_temp_reading.pack(side="right", expand="false")
@@ -822,7 +823,7 @@ class FrontEnd():
 		self.label_current_flowrate_reading = tkinter.ttk.Label(self.flowrate_frame, text = "", font = ("Arial", 12), justify = "right")
 		self.label_current_flowrate_reading.pack(side = "right", expand = "false")
 		
-		self.label_limits_title = tkinter.ttk.Label(self.limits_frame_label, text = "Temp limits (deg C)", font = ("Arial", 12), justify = "center")
+		self.label_limits_title = tkinter.ttk.Label(self.limits_frame_label, text = "Temp limits (°C)", font = ("Arial", 12), justify = "center")
 		self.label_limits_title.pack(side = "left", expand = "true")
 		self.label_current_max_limit_title = tkinter.ttk.Label(self.limits_frame_max, text = "Max", font = ("Arial", 12), justify = "center")
 		self.label_current_max_limit_title.pack(side = "left", expand = "true")

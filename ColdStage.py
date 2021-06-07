@@ -2,7 +2,7 @@
 ########################################################################
 #                                                                      #
 #                           Cold Stage 4                               #
-#                  Copyright 2020 Sebastien Sikora                     #
+#                  Copyright 2021 Sebastien Sikora                     #
 #                    sikora.scientific@gmail.com                       #
 #                                                                      #
 #         A software tool for the control of an inexpensive            #
@@ -11,6 +11,7 @@
 ########################################################################
 
 	This file is part of Cold Stage 4.
+	PRE RELEASE 3
 
 	Cold Stage 4 is free software: you can redistribute it and/or 
 	modify it under the terms of the GNU General Public License as 
@@ -67,7 +68,7 @@ class CoolerControl():
 			'drive_mode' : [2, 2, 2, 2],
 			'pid_coefficients': [{'P' : 0.4, 'I': 0.0, 'D': 2.1}, {'P' : 0.4, 'I': 0.0, 'D': 2.1}, {'P' : 0.4, 'I': 0.0, 'D': 2.1}, {'P' : 0.4, 'I': 0.0, 'D': 2.1}],
 			'max_temperature_limit': [30.0, 30.0, 30.0, 30.0],
-			'min_temperature_limit': [-40.0, -40.0, -40.0, -40.0],
+			'min_temperature_limit': [-45.0, -45.0, -45.0, -45.0],
 			'overload_fault_threshold_seconds': 10.0,
 			#	Calibration:
 			'tc_calibration_time_step': 0.2,

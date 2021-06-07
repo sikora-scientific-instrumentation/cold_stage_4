@@ -1,12 +1,13 @@
 """
 ########################################################################
 #                                                                      #
-#                  Copyright 2020 Sebastien Sikora                     #
+#                  Copyright 2021 Sebastien Sikora                     #
 #                    sikora.scientific@gmail.com                       #
 #                                                                      #
 ########################################################################
 
 	This file is part of Cold Stage 4.
+	PRE RELEASE 3
 
 	Cold Stage 4 is free software: you can redistribute it and/or 
 	modify it under the terms of the GNU General Public License as 
@@ -174,7 +175,7 @@ class DropAssayWidget():
 					success, ramp_rate, error_message = self.ValidateRampRate(ramp_rate)
 					if success == True:
 						# Everything internally works in deg/sec, so convert if necessary.
-						if self.ramp_rate_units.get() == "deg/min":
+						if self.ramp_rate_units.get() == "°C/min":
 							ramp_rate = ramp_rate / 60.0
 						self.assay_parameters['ramp_rate'] = ramp_rate
 						self.SetDisplay(2)
@@ -232,11 +233,11 @@ class DropAssayWidget():
 			if room_temp > self.parent.temperature_limits['max']:
 				success = False
 				room_temp = self.parent.temperature_limits['max']
-				error_message = "Room temperature cannot be > " + str(self.parent.temperature_limits['max']) + " deg C."
+				error_message = "Room temperature cannot be > " + str(self.parent.temperature_limits['max']) + " °C."
 			elif room_temp < self.parent.temperature_limits['min']:
 				success = False
 				room_temp = self.parent.temperature_limits['min']
-				error_message = "Room temperature cannot be < " + str(self.parent.temperature_limits['min']) + " deg C."
+				error_message = "Room temperature cannot be < " + str(self.parent.temperature_limits['min']) + " °C."
 		return success, room_temp, error_message
 	
 	def ValidateStartTemperature(self, room_temp, start_temp):
@@ -256,7 +257,7 @@ class DropAssayWidget():
 			elif start_temp < self.parent.temperature_limits['min']:
 				success = False
 				start_temp = self.parent.temperature_limits['min']
-				error_message = "Start temperature cannot be < " + str(self.parent.temperature_limits['min']) + " deg C."
+				error_message = "Start temperature cannot be < " + str(self.parent.temperature_limits['min']) + " °C."
 		return success, start_temp, error_message
 	
 	def ValidateEndTemperature(self, start_temp, end_temp):
@@ -276,7 +277,7 @@ class DropAssayWidget():
 			elif end_temp < self.parent.temperature_limits['min']:
 				success = False
 				end_temp = self.parent.temperature_limits['min']
-				error_message = "End temperature cannot be < " + str(self.parent.temperature_limits['min']) + " deg C."
+				error_message = "End temperature cannot be < " + str(self.parent.temperature_limits['min']) + " °C."
 		return success, end_temp, error_message
 	
 	def ValidateRampRate(self, ramp_rate):
@@ -347,7 +348,7 @@ class DropAssayWidget():
 		self.widget_window_right_frame.grid_rowconfigure(1, minsize = 20)
 		self.widget_window_right_frame.grid_columnconfigure(0, minsize = 400)
 		
-		stage_titles = ['1. Configure room temperature (deg C)', '2. Configure assay start temperature (deg C)', '3. Configure log file location', 
+		stage_titles = ['1. Configure room temperature (°C)', '2. Configure assay start temperature (°C)', '3. Configure log file location', 
 						'4. Stage not yet at room temperature\n...Please wait...', '5. Prepare droplets', '6. Ramping', '7. Done']
 		self.labels = [tk.Label(self.widget_window_left_frame, text = i, foreground = "grey", font = ("Arial", 12)) for i in stage_titles]
 		for i, label in enumerate(self.labels):
@@ -365,7 +366,7 @@ class DropAssayWidget():
 		self.wizard_frames = dict([[i, tk.Frame(self.widget_window_wizard_frame)] for i in range(7)])
 		
 		self.wizard_frames[0].grid(row = 0, column = 0, sticky = "nsew")
-		self.label_room_temp = tk.Label(self.wizard_frames[0], text = "Room temperature (Deg C)", font = ("Arial", 11))
+		self.label_room_temp = tk.Label(self.wizard_frames[0], text = "Room temperature (°C)", font = ("Arial", 11))
 		self.entry_room_temp = tk.Entry(self.wizard_frames[0], width = 8, font = ("Arial", 11))
 		self.entry_room_temp.insert(0, "20.0")
 		self.label_room_temp.grid(row = 0, column = 0, sticky = "", pady = (10, 5), padx = (5, 5))
@@ -374,18 +375,18 @@ class DropAssayWidget():
 		self.wizard_frames[0].grid_columnconfigure(1, minsize = 200)
 		
 		self.wizard_frames[1].grid(row = 0, column = 0, sticky = "nsew")
-		self.label_start_temp = tk.Label(self.wizard_frames[1], text = "Start temperature (Deg C)", font = ("Arial", 11))
+		self.label_start_temp = tk.Label(self.wizard_frames[1], text = "Start temperature (°C)", font = ("Arial", 11))
 		self.entry_start_temp = tk.Entry(self.wizard_frames[1], width = 8, font = ("Arial", 11))
 		self.label_start_temp.grid(row = 0, column = 0, sticky = "", pady = (10, 5), padx = (5, 5))
 		self.entry_start_temp.grid(row = 0, column = 1, sticky = "", pady = (10, 5), padx = (5, 5))
-		self.label_end_temp = tk.Label(self.wizard_frames[1], text = "End temperature (Deg C)", font = ("Arial", 11))
+		self.label_end_temp = tk.Label(self.wizard_frames[1], text = "End temperature (°C)", font = ("Arial", 11))
 		self.entry_end_temp = tk.Entry(self.wizard_frames[1], width = 8, font = ("Arial", 11))
 		self.label_end_temp.grid(row = 1, column = 0, sticky = "", pady = (5, 5), padx = (5, 5))
 		self.entry_end_temp.grid(row = 1, column = 1, sticky = "", pady = (5, 5), padx = (5, 5))
 		self.label_ramp_rate = tk.Label(self.wizard_frames[1], text = "Ramp rate", font = ("Arial", 11))
 		self.entry_ramp_rate = tk.Entry(self.wizard_frames[1], width = 8, font = ("Arial", 11))
 		self.ramp_rate_units = tk.StringVar(self.widget_window)
-		units = ["deg/sec", "deg/min"]
+		units = ["°C/sec", "°C/min"]
 		self.units = units[1]
 		self.optionmenu_ramp_rate_units = tk.OptionMenu(*(self.wizard_frames[1], self.ramp_rate_units) + tuple(units))
 		# Set default here...
@@ -434,9 +435,9 @@ class DropAssayWidget():
 			new_units = self.ramp_rate_units.get()
 			old_rate_value = float(self.entry_ramp_rate.get())
 			new_rate_value = 0.0
-			if ((new_units == "deg/sec") and (self.units == "deg/min")):
+			if ((new_units == "°C/sec") and (self.units == "°C/min")):
 				new_rate_value = old_rate_value / 60.0
-			elif ((new_units == "deg/min") and (self.units == "deg/sec")):
+			elif ((new_units == "°C/min") and (self.units == "°C/sec")):
 				new_rate_value = old_rate_value * 60.0
 			else:
 				new_rate_value = old_rate_value
