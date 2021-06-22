@@ -81,33 +81,25 @@ class StartUpConfig():
 		self.video_panel.image = placeholder_tk_image
 		self.video_panel.pack(side = "top", fill = "both", expand = "yes")
 		
-		#~self.video_device_count = self.GetVideoDeviceCount()
-		#~self.camera_id = tk.IntVar(self.window)
-		#~self.label_cameras = tk.Label(self.video_config_frame, text="Video device ID:", anchor = tk.CENTER, font = ("Arial", 12, 'bold'))
-		#~self.label_cameras.pack(side="top", expand="true", fill = tk.BOTH)
-		#~upper_index = self.video_device_count-1
-		#~if upper_index < 0:
-			#~upper_index = 0
-		#~self.spinbox = tk.Spinbox(self.video_config_frame, from_=0, to_=upper_index, textvariable = self.camera_id)
-		#~self.spinbox.pack(side = "top", expand = "true", fill = tk.BOTH)
-		#~self.camera_id.trace("w", self.VideoCallBack)
-		
 		self.video_disabled_flag = tk.BooleanVar(self.window)
 		self.checkButton_video_disabled = tk.Checkbutton(self.video_config_frame, text = "Disable video", variable = self.video_disabled_flag, onvalue = True, offvalue = False)
 		self.checkButton_video_disabled.pack(side = "top", expand = "true", fill = tk.BOTH)
 		self.video_device_list = self.GetVideoDeviceList()
-		self.video_device_count = len(self.video_device_list)
-		self.camera_id = tk.IntVar(self.window)
+		if self.video_device_list == []:
+			self.video_device_list = ['No cameras found']
+		
+		self.camera_id = tk.StringVar(self.window)
 		self.video_devices = tk.OptionMenu(*(self.video_config_frame, self.camera_id) + tuple(self.video_device_list)) # OptionMenu is linked to self.device_name StringVar.
 		self.video_devices.pack(side = "top", expand = "true", fill = tk.BOTH)
+		self.camera_id.set(self.video_device_list[0])
 		self.camera_id.trace("w", self.VideoCallBack)
 		
-		if self.video_device_count == 0:
+		if self.camera_id == 'No cameras found':
 			self.video_disabled_flag.set(True)
 			self.checkButton_video_disabled.configure(state = DISABLED)
+			self.video_devices.configure(state = DISABLED)
 		else:
 			self.video_disabled_flag.set(False)
-			self.checkButton_video_disabled.configure(state = NORMAL)
 		
 		self.button_start = tk.Button(self.buttons_frame, text="Start", command=self.Start)
 		self.button_start.pack(side = "top", expand = "true", fill = tk.BOTH)
@@ -118,12 +110,13 @@ class StartUpConfig():
 		
 		self.action = tk.StringVar(self.window)
 		
-		self.capture_object = cv2.VideoCapture(self.camera_id.get())
-		self.capture_object.set(3, 320)
-		self.capture_object.set(4, 240)
-		self.UpdateVideoPreview()
+		if self.video_disabled_flag.get() == False:
+			self.capture_object = cv2.VideoCapture(int(self.camera_id.get()))
+			self.capture_object.set(3, 320)
+			self.capture_object.set(4, 240)
+		self.after_id_video = self.window.after(0, self.UpdateVideoPreview)
 		
-		self.ScanForDevices()
+		self.after_id_serial = self.window.after(0, self.ScanForDevices)
 		self.window.mainloop()
 		
 	def PassFunc(self):
@@ -133,7 +126,10 @@ class StartUpConfig():
 		self.comms.available_ports = []
 	
 	def Start(self):
-		self.capture_object.release()
+		try:
+			self.capture_object.release()
+		except:
+			pass
 		self.window_open = False
 		# Cancel after() call if queued.
 		if self.after_id_video in self.window.tk.call("after", "info"):
@@ -144,7 +140,10 @@ class StartUpConfig():
 		self.window.destroy()
 	
 	def Quit(self):
-		self.capture_object.release()
+		try:
+			self.capture_object.release()
+		except:
+			pass
 		self.window_open = False
 		# Cancel after() call if queued.
 		if self.after_id_video in self.window.tk.call("after", "info"):
@@ -161,18 +160,20 @@ class StartUpConfig():
 		self.after_id_serial = self.window.after(100, self.ScanForDevices)
 		
 	def UpdateVideoPreview(self):
-		ret, capture = self.capture_object.read()
-		if ret:
-			colour_corrected_frame_array = cv2.cvtColor(capture, cv2.COLOR_BGR2RGB)
-			colour_corrected_image = Image.fromarray(colour_corrected_frame_array)
-			self.colour_corrected_tk_image = ImageTk.PhotoImage(colour_corrected_image)
-			self.video_panel.configure(image = self.colour_corrected_tk_image)
-			self.video_panel.image = self.colour_corrected_tk_image
+		if self.video_disabled_flag.get() == False:
+			ret, capture = self.capture_object.read()
+			if ret:
+				colour_corrected_frame_array = cv2.cvtColor(capture, cv2.COLOR_BGR2RGB)
+				colour_corrected_image = Image.fromarray(colour_corrected_frame_array)
+				self.colour_corrected_tk_image = ImageTk.PhotoImage(colour_corrected_image)
+				self.video_panel.configure(image = self.colour_corrected_tk_image)
+				self.video_panel.image = self.colour_corrected_tk_image
 		self.after_id_video = self.window.after(250, self.UpdateVideoPreview)
 		
 	def VideoCallBack(self, *args):
+		camera_id = self.camera_id.get()
 		self.capture_object.release()
-		self.capture_object = cv2.VideoCapture(self.camera_id.get())
+		self.capture_object = cv2.VideoCapture(int(camera_id))
 		self.capture_object.set(3, 320)
 		self.capture_object.set(4, 240)
 	
@@ -229,7 +230,7 @@ class StartUpConfig():
 			if (capture_object is None) or (not capture_object.isOpened()):
 				capture_object.release()
 			else:
-				video_device_list.append(video_device_ID)
+				video_device_list.append(str(video_device_ID))
 				capture_object.release()
 			video_device_ID += 1
 		return video_device_list

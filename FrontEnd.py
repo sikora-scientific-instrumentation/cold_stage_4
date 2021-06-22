@@ -164,7 +164,7 @@ class FrontEnd():
 						self.setpoint_temperatures = []
 					elif most_recent_message[2].startswith('End of profile'):
 						self.EnableFrontEndRampControls()
-						if ((self.logging_flag == True) and (self.checkButton_log_end_on_profile_end_value.get() == True)):
+						if ((self.logging_flag == True) and (self.checkButton_pr_log_end_on_profile_end_value.get() == True)):
 							# Reset the logging controls to their default state.
 							self.checkButton_log_video_split.configure(state = NORMAL)
 							self.button_log_off.configure(state = DISABLED)
@@ -177,6 +177,13 @@ class FrontEnd():
 					self.temperature_limits['min'] = float(most_recent_message[3])
 					self.label_current_max_limit_reading.configure(text = most_recent_message[2])
 					self.label_current_min_limit_reading.configure(text = most_recent_message[3])
+					self.entry_simple_ramp_end_temp.delete(0, "end")
+					self.entry_simple_ramp_end_temp.insert(0, str(self.temperature_limits['min']))
+					self.entry_simple_ramp_start_temp.delete(0, "end")
+					if self.temperature_limits['max'] < 0.0:
+						self.entry_simple_ramp_start_temp.insert(0, str(self.temperature_limits['max']))
+					else:
+						self.entry_simple_ramp_start_temp.insert(0, "0.0")
 				elif most_recent_message[1] == 'Set_logging_label':
 					self.label_logging_reading.configure(text = most_recent_message[2])
 				elif most_recent_message[1] == 'All_shutdown_confirm':
@@ -589,12 +596,12 @@ class FrontEnd():
 			except:
 				self.GenerateGenericWarningWindow("Warning", "Coefficients must be numerical.")
 	
-	def Ramp(self):
+	def ProgramRamp(self):
 		if self.ClicksAreActive() == True:
-			new_ramp_path = self.entry_ramp_path.get()
-			new_ramp_repeats = int(self.entry_ramp_repeats.get())
-			new_ramp_log_end_on_profile_end = self.checkButton_log_end_on_profile_end_value.get()
-			new_ramp_log_start_on_profile_start = self.checkButton_log_start_on_profile_start_value.get()
+			new_ramp_path = self.entry_program_ramp_path.get()
+			new_ramp_repeats = int(self.entry_program_ramp_repeats.get())
+			new_ramp_log_end_on_profile_end = self.checkButton_pr_log_end_on_profile_end_value.get()
+			new_ramp_log_start_on_profile_start = self.checkButton_pr_log_start_on_profile_start_value.get()
 			if ((new_ramp_log_start_on_profile_start == True) and (self.entry_log_file.get() == '')):
 				self.GenerateGenericWarningWindow("Warning", "Cannot start logging as no log location selected.")
 			else:		
@@ -604,28 +611,114 @@ class FrontEnd():
 				if new_ramp_log_start_on_profile_start == True:
 					self.StartLogging()
 					# Set the logging controls to their 'logging' state.
-					self.checkButton_log_video_split.configure(state = DISABLED)
-					self.button_log_off.configure(state = NORMAL)
-					self.button_log_on.configure(state = DISABLED)
-					self.button_log_select.configure(state = DISABLED)
+					self.DisableFrontEndLoggingControls()
+	
+	def SimpleRamp(self):
+		if self.ClicksAreActive() == True:
+			new_ramp_log_end_on_profile_end = self.checkButton_sr_log_end_on_profile_end_value.get()
+			new_ramp_log_start_on_profile_start = self.checkButton_sr_log_start_on_profile_start_value.get()
+			error_string = ''
+			validated = True
+			try:	# Validate entered ramp start temperature.
+				new_ramp_start_temp = float(self.entry_simple_ramp_start_temp.get())
+				if new_ramp_start_temp > self.temperature_limits['max']:
+					error_string += "Ramp start temperature must be lower than the maximum temperature.\n"
+					new_ramp_start_temp = 0.0
+					validated = False
+				elif new_ramp_start_temp < self.temperature_limits['min']:
+					error_string += "Ramp start temperature must be greater than the minimum temperature.\n"
+					new_ramp_start_temp = 0.0
+					validated = False
+			except:
+				error_string += "Ramp start temperature must be numerical between the maximum and minimum temperature limits.\n"
+				new_ramp_start_temp = 0.0
+				validated = False
+			try:	# Validate entered ramp end temperature.
+				new_ramp_end_temp = float(self.entry_simple_ramp_end_temp.get())
+				if new_ramp_end_temp > self.temperature_limits['max']:
+					error_string += "Ramp end temperature must be lower than the maximum temperature.\n"
+					new_ramp_end_temp = 0.0
+					validated = False
+				elif new_ramp_end_temp < self.temperature_limits['min']:
+					error_string += "Ramp end temperature must be greater than the minimum temperature.\n"
+					new_ramp_end_temp = 0.0
+					validated = False
+			except:
+				error_string += "Ramp end temperature must be numerical between the maximum and minimum temperature limits.\n"
+				new_ramp_end_temp = 0.0
+				validated = False
+			if validated == True:
+				try:	# Validate entered ramp rate.
+					new_ramp_rate = float(self.entry_simple_ramp_rate.get())
+					if ((new_ramp_start_temp > new_ramp_end_temp) and (new_ramp_rate > 0.0)):
+						new_ramp_rate = new_ramp_rate * -1.0
+						self.entry_simple_ramp_rate.delete(0, "end")
+						self.entry_simple_ramp_rate.insert(0, str(new_ramp_rate))
+					elif ((new_ramp_start_temp < new_ramp_end_temp) and (new_ramp_rate < 0.0)):
+						new_ramp_rate = new_ramp_rate * -1.0
+						self.entry_simple_ramp_rate.delete(0, "end")
+						self.entry_simple_ramp_rate.insert(0, str(new_ramp_rate))
+				except:
+					error_string += "Ramp rate must be numerical.\n"
+					new_ramp_rate = 0.0
+					validated = False
+			else:
+				new_ramp_rate = 0.0
+			# We work internally in deg/sec so convert ramp rate to this if needed.
+			if self.simple_ramp_rate_units.get() == "°C/min":
+				new_ramp_rate = new_ramp_rate / 60.0
+			if ((new_ramp_log_start_on_profile_start == True) and (self.entry_log_file.get() == '')):
+				error_string += "Cannot start logging as no log location selected.\n"
+				validated = False
+			# If any of the entries have caused issues, throw corresponding warnings...
+			if validated == False:
+				self.GenerateGenericWarningWindow("Warning", error_string)
+			else:
+				# ...otherwise start the ramp.
+				new_ramp_table = [['ramp', new_ramp_start_temp, new_ramp_end_temp, new_ramp_rate]]
+				self.running_flag = True
+				self.mq_front_to_back.put(('Ramp', 1, new_ramp_log_end_on_profile_end, None, new_ramp_table))
+				self.DisableFrontEndRampControls()
+				if new_ramp_log_start_on_profile_start == True:
+					self.StartLogging()
+					# Set the logging controls to their 'logging' state.
+					self.DisableFrontEndLoggingControls()
 	
 	def EnableFrontEndRampControls(self):
 		# Restore ramp management controls to their default state.
-		self.entry_ramp_path.configure(state = NORMAL)
-		self.entry_ramp_repeats.configure(state = NORMAL)
-		self.checkButton_log_end_on_profile_end.configure(state = NORMAL)
-		self.checkButton_log_start_on_profile_start.configure(state = NORMAL)
-		self.button_ramp_select.configure(state = NORMAL)
-		self.button_ramp.configure(state = NORMAL)
+		# Simple ramp controls.
+		self.entry_simple_ramp_start_temp.configure(state = NORMAL)
+		self.entry_simple_ramp_end_temp.configure(state = NORMAL)
+		self.entry_simple_ramp_rate.configure(state = NORMAL)
+		self.checkButton_sr_log_end_on_profile_end.configure(state = NORMAL)
+		self.checkButton_sr_log_start_on_profile_start.configure(state = NORMAL)
+		self.optionmenu_ramp_rate_units.configure(state = NORMAL)
+		self.button_sr_ramp.configure(state = NORMAL)
+		# Program ramp controls.
+		self.entry_program_ramp_path.configure(state = NORMAL)
+		self.entry_program_ramp_repeats.configure(state = NORMAL)
+		self.checkButton_pr_log_end_on_profile_end.configure(state = NORMAL)
+		self.checkButton_pr_log_start_on_profile_start.configure(state = NORMAL)
+		self.button_program_ramp_select.configure(state = NORMAL)
+		self.button_program_ramp.configure(state = NORMAL)
 	
 	def DisableFrontEndRampControls(self):
 		# Grey out ramp management controls while ramp is running.
-		self.entry_ramp_path.configure(state = DISABLED)
-		self.entry_ramp_repeats.configure(state = DISABLED)
-		self.checkButton_log_end_on_profile_end.configure(state = DISABLED)
-		self.checkButton_log_start_on_profile_start.configure(state = DISABLED)
-		self.button_ramp_select.configure(state = DISABLED)
-		self.button_ramp.configure(state = DISABLED)
+		# Simple ramp controls.
+		self.entry_simple_ramp_start_temp.configure(state = DISABLED)
+		self.entry_simple_ramp_end_temp.configure(state = DISABLED)
+		self.entry_simple_ramp_rate.configure(state = DISABLED)
+		self.checkButton_sr_log_end_on_profile_end.configure(state = DISABLED)
+		self.checkButton_sr_log_start_on_profile_start.configure(state = DISABLED)
+		self.optionmenu_ramp_rate_units.configure(state = DISABLED)
+		self.button_sr_ramp.configure(state = DISABLED)
+		# Program ramp controls.
+		self.entry_program_ramp_path.configure(state = DISABLED)
+		self.entry_program_ramp_repeats.configure(state = DISABLED)
+		self.checkButton_pr_log_end_on_profile_end.configure(state = DISABLED)
+		self.checkButton_pr_log_start_on_profile_start.configure(state = DISABLED)
+		self.button_program_ramp_select.configure(state = DISABLED)
+		self.button_program_ramp.configure(state = DISABLED)
 	
 	def SelectLogLocation(self):
 		if self.ClicksAreActive() == True:
@@ -704,8 +797,8 @@ class FrontEnd():
 				self.modal_dialog_open = False
 			# If the user does not click cancel...
 			if file_path is not None:
-				self.entry_ramp_path.delete(0, 'end')
-				self.entry_ramp_path.insert(0, file_path)
+				self.entry_program_ramp_path.delete(0, 'end')
+				self.entry_program_ramp_path.insert(0, file_path)
 	
 	def ClearPlot(self):
 		if self.ClicksAreActive() == True:
@@ -801,15 +894,12 @@ class FrontEnd():
 		self.limits_frame_max.pack(side="left", expand="true", fill = tk.X)
 		self.limits_frame_min = tkinter.ttk.Frame(self.limits_frame, borderwidth = 1, relief = "groove")
 		self.limits_frame_min.pack(side="right", expand="true", fill = tk.X)
-		
 		self.label_mode = tkinter.ttk.Label(self.mode_frame, text="Idle", font = ("Arial", 12))
 		self.label_mode.pack(side="top", expand="true", fill = tk.X)
-		
 		self.label_logging_title = tkinter.ttk.Label(self.logging_frame, text="Logging", font = ("Arial", 12), justify = "left")
 		self.label_logging_title.pack(side="left", expand="false")
 		self.label_logging_reading = tkinter.ttk.Label(self.logging_frame, text="OFF", font = ("Arial", 14, 'bold'), justify = "right")
 		self.label_logging_reading.pack(side="right", expand="false")
-		
 		self.label_current_temp_title = tkinter.ttk.Label(self.temperature_frame, text="Temp (°C)", font = ("Arial", 12), justify = "center")
 		self.label_current_temp_title.pack(side="top", expand="true")
 		self.label_current_temp_reading = tkinter.ttk.Label(self.temperature_frame, text="", font = ("Arial", 20, 'bold'), justify = "center")
@@ -822,7 +912,6 @@ class FrontEnd():
 		self.label_current_flowrate_title.pack(side = "left", expand = "false")
 		self.label_current_flowrate_reading = tkinter.ttk.Label(self.flowrate_frame, text = "", font = ("Arial", 12), justify = "right")
 		self.label_current_flowrate_reading.pack(side = "right", expand = "false")
-		
 		self.label_limits_title = tkinter.ttk.Label(self.limits_frame_label, text = "Temp limits (°C)", font = ("Arial", 12), justify = "center")
 		self.label_limits_title.pack(side = "left", expand = "true")
 		self.label_current_max_limit_title = tkinter.ttk.Label(self.limits_frame_max, text = "Max", font = ("Arial", 12), justify = "center")
@@ -848,7 +937,7 @@ class FrontEnd():
 		# tab f2 contains setpoint controls
 		self.setpoint_entry_frame = tkinter.ttk.Frame(self.f2, borderwidth = 1)
 		self.setpoint_entry_frame.pack(side="top", expand="true", fill = tk.BOTH)
-		self.label_setpoint = tkinter.ttk.Label(self.setpoint_entry_frame, text="Target temperature")
+		self.label_setpoint = tkinter.ttk.Label(self.setpoint_entry_frame, text="Target temperature (°C)")
 		self.label_setpoint.pack(side="top", pady = (5, 0), expand="false", fill = tk.X)
 		self.entry_setpoint = tkinter.ttk.Entry(self.setpoint_entry_frame)
 		self.entry_setpoint.pack(side="top", pady = (5, 0), expand="false", fill = tk.X)
@@ -856,30 +945,84 @@ class FrontEnd():
 		self.button_set.pack(side = "top", pady = (5, 0), expand = "false", fill = tk.X)
 		
 		# tab f3 contains ramp controls
-		self.ramp_config_frame = tkinter.ttk.Frame(self.f3, borderwidth = 1)
-		self.ramp_config_frame.pack(side="top", expand="true", fill = tk.BOTH)
-		self.label_ramp_path = tkinter.ttk.Label(self.ramp_config_frame, text="Path to ramp profile csv file:")
-		self.label_ramp_path.pack(side="top", pady = (5, 0), expand="false", fill = tk.X)
-		self.entry_ramp_path = tkinter.ttk.Entry(self.ramp_config_frame)
-		self.entry_ramp_path.pack(side="top", pady = (5, 0), expand="false", fill = tk.X)
-		self.entry_ramp_path.insert(0, self.device_parameter_defaults['path_to_ramp_profile'][self.channel_id])
-		self.button_ramp_select = tkinter.ttk.Button(self.ramp_config_frame, text="Select ramp", command=self.SelectRamp)
-		self.button_ramp_select.pack(side = "top", pady = (5, 0), expand = "false", fill = tk.X)
-		self.label_ramp_repeats = tkinter.ttk.Label(self.ramp_config_frame, text="Repeat (n) times:")
-		self.label_ramp_repeats.pack(side="top", pady = (5, 0), expand="false", fill = tk.X)
-		self.entry_ramp_repeats = tkinter.ttk.Entry(self.ramp_config_frame)
-		self.entry_ramp_repeats.pack(side="top", pady = (5, 0), expand="false", fill = tk.X)
-		self.entry_ramp_repeats.insert(0, self.device_parameter_defaults['ramp_repeats'][self.channel_id])
-		self.checkButton_log_start_on_profile_start_value = tk.BooleanVar(self.ramp_config_frame)
-		self.checkButton_log_start_on_profile_start_value.set(self.device_parameter_defaults['start_logging_at_profile_start_flag'][self.channel_id])
-		self.checkButton_log_start_on_profile_start = tk.Checkbutton(self.ramp_config_frame, text = "Start logging at ramp start?", variable = self.checkButton_log_start_on_profile_start_value, onvalue = True, offvalue = False)
-		self.checkButton_log_start_on_profile_start.pack(side = "top", pady = (5, 0), expand = "false", fill = tk.X)
-		self.checkButton_log_end_on_profile_end_value = tk.BooleanVar(self.ramp_config_frame)
-		self.checkButton_log_end_on_profile_end_value.set(self.device_parameter_defaults['stop_logging_at_profile_end_flag'][self.channel_id])
-		self.checkButton_log_end_on_profile_end = tk.Checkbutton(self.ramp_config_frame, text = "Stop logging at ramp end?", variable = self.checkButton_log_end_on_profile_end_value, onvalue = True, offvalue = False)
-		self.checkButton_log_end_on_profile_end.pack(side = "top", pady = (5, 0), expand = "false", fill = tk.X)
-		self.button_ramp = tkinter.ttk.Button(self.ramp_config_frame, text="Ramp", command=self.Ramp)
-		self.button_ramp.pack(side = "top", pady = (5, 0), expand = "false", fill = tk.X)
+		self.ramp_tabs = tkinter.ttk.Notebook(self.f3)
+		self.simple_ramp_tab = tkinter.ttk.Frame(self.ramp_tabs)
+		self.program_ramp_tab = tkinter.ttk.Frame(self.ramp_tabs)
+		self.ramp_tabs.add(self.simple_ramp_tab, text = "Simple")
+		self.ramp_tabs.add(self.program_ramp_tab, text = "Program")
+		self.ramp_tabs.pack(side = "top", expand = "true", fill = tk.BOTH)
+		
+		# Basic linear ramp controls.
+		self.frame_simple_ramp_config = tkinter.ttk.Frame(self.simple_ramp_tab, borderwidth = 1)
+		self.frame_simple_ramp_config.pack(side="top", expand="true", fill = tk.BOTH)
+		self.frame_simple_ramp_start_temp = tkinter.ttk.Frame(self.frame_simple_ramp_config, borderwidth = 1)
+		self.frame_simple_ramp_start_temp.pack(side = "top", expand = "false", fill = tk.X)
+		self.label_simple_ramp_start_temp = tkinter.ttk.Label(self.frame_simple_ramp_start_temp, text="Start temperature (°C)")
+		self.label_simple_ramp_start_temp.pack(side="left", pady = (5, 0), expand="false")
+		self.entry_simple_ramp_start_temp = tkinter.ttk.Entry(self.frame_simple_ramp_start_temp)
+		self.entry_simple_ramp_start_temp.pack(side="right", pady = (5, 0), expand="false")
+		self.frame_simple_ramp_end_temp = tkinter.ttk.Frame(self.frame_simple_ramp_config, borderwidth = 1)
+		self.frame_simple_ramp_end_temp.pack(side = "top", expand = "false", fill = tk.X)
+		self.label_simple_ramp_end_temp = tkinter.ttk.Label(self.frame_simple_ramp_end_temp, text="End temperature (°C)")
+		self.label_simple_ramp_end_temp.pack(side="left", pady = (5, 0), expand="false")
+		self.entry_simple_ramp_end_temp = tkinter.ttk.Entry(self.frame_simple_ramp_end_temp)
+		self.entry_simple_ramp_end_temp.pack(side="right", pady = (5, 0), expand="false")
+		self.frame_simple_ramp_rate = tkinter.ttk.Frame(self.frame_simple_ramp_config, borderwidth = 1)
+		self.frame_simple_ramp_rate.pack(side = "top", expand = "false", fill = tk.X)
+		self.label_simple_ramp_rate = tk.Label(self.frame_simple_ramp_rate, text = "Ramp rate")
+		self.label_simple_ramp_rate.pack(side="left", pady = (5, 0), expand="false")
+		self.entry_simple_ramp_rate = tk.Entry(self.frame_simple_ramp_rate, width = 8)
+		self.entry_simple_ramp_rate.pack(side="left", pady = (5, 0), expand="false")
+		self.simple_ramp_rate_units = tk.StringVar(self.frame_simple_ramp_config)
+		units = ["°C/sec", "°C/min"]
+		self.optionmenu_ramp_rate_units = tk.OptionMenu(*(self.frame_simple_ramp_rate, self.simple_ramp_rate_units) + tuple(units))
+		self.optionmenu_ramp_rate_units.pack(side="left", pady = (5, 0), expand="false")
+		# Set default here...
+		self.simple_ramp_rate_units.set(units[1])
+		self.simple_ramp_rate_units_trace_id = self.simple_ramp_rate_units.trace("w", self.AdjustUnits)
+		self.simple_ramp_rate_prev_units = units[1]
+		if self.temperature_limits['max'] < 0.0:
+			self.entry_simple_ramp_start_temp.insert(0, str(self.temperature_limits['max']))
+		else:
+			self.entry_simple_ramp_start_temp.insert(0, "0.0")
+		self.entry_simple_ramp_end_temp.insert(0, str(self.temperature_limits['min']))
+		self.entry_simple_ramp_rate.insert(0, "1.0")
+		self.checkButton_sr_log_start_on_profile_start_value = tk.BooleanVar(self.frame_simple_ramp_config)
+		self.checkButton_sr_log_start_on_profile_start_value.set(self.device_parameter_defaults['start_logging_at_profile_start_flag'][self.channel_id])
+		self.checkButton_sr_log_start_on_profile_start = tk.Checkbutton(self.frame_simple_ramp_config, text = "Start logging at ramp start?", variable = self.checkButton_sr_log_start_on_profile_start_value, onvalue = True, offvalue = False)
+		self.checkButton_sr_log_start_on_profile_start.pack(side = "top", pady = (5, 0), expand = "false", fill = tk.X)
+		self.checkButton_sr_log_end_on_profile_end_value = tk.BooleanVar(self.frame_simple_ramp_config)
+		self.checkButton_sr_log_end_on_profile_end_value.set(self.device_parameter_defaults['stop_logging_at_profile_end_flag'][self.channel_id])
+		self.checkButton_sr_log_end_on_profile_end = tk.Checkbutton(self.frame_simple_ramp_config, text = "Stop logging at ramp end?", variable = self.checkButton_sr_log_end_on_profile_end_value, onvalue = True, offvalue = False)
+		self.checkButton_sr_log_end_on_profile_end.pack(side = "top", pady = (5, 0), expand = "false", fill = tk.X)
+		self.button_sr_ramp = tkinter.ttk.Button(self.frame_simple_ramp_config, text="Ramp", command=self.SimpleRamp)
+		self.button_sr_ramp.pack(side = "bottom", pady = (5, 0), expand = "false", fill = tk.X)
+		
+		# Scripted program ramp controls.
+		self.frame_program_ramp_config = tkinter.ttk.Frame(self.program_ramp_tab, borderwidth = 1)
+		self.frame_program_ramp_config.pack(side="top", expand="true", fill = tk.BOTH)
+		self.label_program_ramp_path = tkinter.ttk.Label(self.frame_program_ramp_config, text="Path to ramp profile csv file:")
+		self.label_program_ramp_path.pack(side="top", pady = (5, 0), expand="false", fill = tk.X)
+		self.entry_program_ramp_path = tkinter.ttk.Entry(self.frame_program_ramp_config)
+		self.entry_program_ramp_path.pack(side="top", pady = (5, 0), expand="false", fill = tk.X)
+		self.entry_program_ramp_path.insert(0, self.device_parameter_defaults['path_to_ramp_profile'][self.channel_id])
+		self.button_program_ramp_select = tkinter.ttk.Button(self.frame_program_ramp_config, text="Select ramp", command=self.SelectRamp)
+		self.button_program_ramp_select.pack(side = "top", pady = (5, 0), expand = "false", fill = tk.X)
+		self.label_program_ramp_repeats = tkinter.ttk.Label(self.frame_program_ramp_config, text="Repeat (n) times:")
+		self.label_program_ramp_repeats.pack(side="top", pady = (5, 0), expand="false", fill = tk.X)
+		self.entry_program_ramp_repeats = tkinter.ttk.Entry(self.frame_program_ramp_config)
+		self.entry_program_ramp_repeats.pack(side="top", pady = (5, 0), expand="false", fill = tk.X)
+		self.entry_program_ramp_repeats.insert(0, self.device_parameter_defaults['ramp_repeats'][self.channel_id])
+		self.checkButton_pr_log_start_on_profile_start_value = tk.BooleanVar(self.frame_program_ramp_config)
+		self.checkButton_pr_log_start_on_profile_start_value.set(self.device_parameter_defaults['start_logging_at_profile_start_flag'][self.channel_id])
+		self.checkButton_pr_log_start_on_profile_start = tk.Checkbutton(self.frame_program_ramp_config, text = "Start logging at ramp start?", variable = self.checkButton_pr_log_start_on_profile_start_value, onvalue = True, offvalue = False)
+		self.checkButton_pr_log_start_on_profile_start.pack(side = "top", pady = (5, 0), expand = "false", fill = tk.X)
+		self.checkButton_pr_log_end_on_profile_end_value = tk.BooleanVar(self.frame_program_ramp_config)
+		self.checkButton_pr_log_end_on_profile_end_value.set(self.device_parameter_defaults['stop_logging_at_profile_end_flag'][self.channel_id])
+		self.checkButton_pr_log_end_on_profile_end = tk.Checkbutton(self.frame_program_ramp_config, text = "Stop logging at ramp end?", variable = self.checkButton_pr_log_end_on_profile_end_value, onvalue = True, offvalue = False)
+		self.checkButton_pr_log_end_on_profile_end.pack(side = "top", pady = (5, 0), expand = "false", fill = tk.X)
+		self.button_program_ramp = tkinter.ttk.Button(self.frame_program_ramp_config, text="Ramp", command=self.ProgramRamp)
+		self.button_program_ramp.pack(side = "bottom", pady = (5, 0), expand = "false", fill = tk.X)
 		
 		# tab f4 contains logging configuration
 		self.log_config_frame = tkinter.ttk.Frame(self.f4, borderwidth = 1)
@@ -1004,6 +1147,28 @@ class FrontEnd():
 			plot_widget = self.canvas.get_tk_widget()
 			plot_widget.pack(side = "bottom", expand = "true")
 			self.InitialisePlot()
+	
+	def AdjustUnits(self, *args):
+		if self.ClicksAreActive() == True:
+			new_units = self.simple_ramp_rate_units.get()
+			old_rate_value = float(self.entry_simple_ramp_rate.get())
+			new_rate_value = 0.0
+			if ((new_units == "°C/sec") and (self.simple_ramp_rate_prev_units == "°C/min")):
+				new_rate_value = old_rate_value / 60.0
+			elif ((new_units == "°C/min") and (self.simple_ramp_rate_prev_units == "°C/sec")):
+				new_rate_value = old_rate_value * 60.0
+			else:
+				new_rate_value = old_rate_value
+			self.entry_simple_ramp_rate.delete(0, "end")
+			self.entry_simple_ramp_rate.insert(0, str(new_rate_value))
+			self.simple_ramp_rate_prev_units = new_units
+		else:
+			self.simple_ramp_rate_units.trace_vdelete("w", self.simple_ramp_rate_units_trace_id)
+			self.top.after(0, self.__UndoAdjustUnits)
+	
+	def __UndoAdjustUnits(self):
+		self.simple_ramp_rate_units.set(self.simple_ramp_rate_prev_units)
+		self.simple_ramp_rate_units_trace_id = self.simple_ramp_rate_units.trace("w", self.AdjustUnits)
 	
 	def GenerateTKVideoWindow(self):
 		# Create a child window in which the webcam images will be drawn, then create a

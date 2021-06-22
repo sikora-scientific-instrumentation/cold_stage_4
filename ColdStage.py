@@ -88,31 +88,32 @@ class CoolerControl():
 		}
 		
 		self.start_up_config = StartUpConfig.StartUpConfig(self.device_parameter_defaults)
-		self.comms_baud = self.device_parameter_defaults['comms_baud_rate']
-		self.comms_unique_id = self.start_up_config.device_unique_id.get()
-		self.comms_port = self.start_up_config.device_port.get()
-		self.num_channels = self.start_up_config.device_number_of_channels.get()
-		self.video_device_id = [int(self.start_up_config.camera_id.get()), 0, 0, 0]
-		self.video_enabled = [not bool(self.start_up_config.video_disabled_flag.get()), 0, 0, 0]
-		self.timing_flag = self.device_parameter_defaults['timing_info_flag']
-		self.time_step = self.device_parameter_defaults['time_step']
-		self.plotting_enabled = self.device_parameter_defaults['enable_plotting_flag']
-		self.drive_mode = self.device_parameter_defaults['drive_mode']
 		self.action = self.start_up_config.action.get()
 		
-		if self.num_channels < 1:
-			self.num_channels = 1
-		elif self.num_channels > 4:
-			self.num_channels = 4
-		
-		self.device_parameter_defaults['prt_calibration_coeffs_filepath'] = [self.device_parameter_defaults['prt_calibration_coeffs_filepath'][i].split('*')[0] + str(self.comms_unique_id) + self.device_parameter_defaults['prt_calibration_coeffs_filepath'][i].split('*')[1] for i in range(self.num_channels)]
-		self.device_parameter_defaults['tc_calibration_temp_data_filepath'] = [self.device_parameter_defaults['tc_calibration_temp_data_filepath'][i].split('*')[0] + str(self.comms_unique_id) + self.device_parameter_defaults['tc_calibration_temp_data_filepath'][i].split('*')[1] for i in range(self.num_channels)]
-		self.device_parameter_defaults['tc_calibration_final_data_filepath'] = [self.device_parameter_defaults['tc_calibration_final_data_filepath'][i].split('*')[0] + str(self.comms_unique_id) + self.device_parameter_defaults['tc_calibration_final_data_filepath'][i].split('*')[1] for i in range(self.num_channels)]
-		self.device_parameter_defaults['tc_calibration_coeffs_filepath'] = [self.device_parameter_defaults['tc_calibration_coeffs_filepath'][i].split('*')[0] + str(self.comms_unique_id) + self.device_parameter_defaults['tc_calibration_coeffs_filepath'][i].split('*')[1] for i in range(self.num_channels)]
-		self.device_parameter_defaults['calibrated_temp_limits_filepath'] = [self.device_parameter_defaults['calibrated_temp_limits_filepath'][i].split('*')[0] + str(self.comms_unique_id) + self.device_parameter_defaults['calibrated_temp_limits_filepath'][i].split('*')[1] for i in range(self.num_channels)]
-		self.simulation_flag = (self.comms_port == 'none')
-		
 		if self.action == 'start':
+			self.comms_baud = self.device_parameter_defaults['comms_baud_rate']
+			self.comms_unique_id = self.start_up_config.device_unique_id.get()
+			self.comms_port = self.start_up_config.device_port.get()
+			self.num_channels = self.start_up_config.device_number_of_channels.get()
+			self.video_device_id = [int(self.start_up_config.camera_id.get()), 0, 0, 0]
+			self.video_enabled = [not bool(self.start_up_config.video_disabled_flag.get()), 0, 0, 0]
+			self.timing_flag = self.device_parameter_defaults['timing_info_flag']
+			self.time_step = self.device_parameter_defaults['time_step']
+			self.plotting_enabled = self.device_parameter_defaults['enable_plotting_flag']
+			self.drive_mode = self.device_parameter_defaults['drive_mode']
+			
+			if self.num_channels < 1:
+				self.num_channels = 1
+			elif self.num_channels > 4:
+				self.num_channels = 4
+			
+			self.device_parameter_defaults['prt_calibration_coeffs_filepath'] = [self.device_parameter_defaults['prt_calibration_coeffs_filepath'][i].split('*')[0] + str(self.comms_unique_id) + self.device_parameter_defaults['prt_calibration_coeffs_filepath'][i].split('*')[1] for i in range(self.num_channels)]
+			self.device_parameter_defaults['tc_calibration_temp_data_filepath'] = [self.device_parameter_defaults['tc_calibration_temp_data_filepath'][i].split('*')[0] + str(self.comms_unique_id) + self.device_parameter_defaults['tc_calibration_temp_data_filepath'][i].split('*')[1] for i in range(self.num_channels)]
+			self.device_parameter_defaults['tc_calibration_final_data_filepath'] = [self.device_parameter_defaults['tc_calibration_final_data_filepath'][i].split('*')[0] + str(self.comms_unique_id) + self.device_parameter_defaults['tc_calibration_final_data_filepath'][i].split('*')[1] for i in range(self.num_channels)]
+			self.device_parameter_defaults['tc_calibration_coeffs_filepath'] = [self.device_parameter_defaults['tc_calibration_coeffs_filepath'][i].split('*')[0] + str(self.comms_unique_id) + self.device_parameter_defaults['tc_calibration_coeffs_filepath'][i].split('*')[1] for i in range(self.num_channels)]
+			self.device_parameter_defaults['calibrated_temp_limits_filepath'] = [self.device_parameter_defaults['calibrated_temp_limits_filepath'][i].split('*')[0] + str(self.comms_unique_id) + self.device_parameter_defaults['calibrated_temp_limits_filepath'][i].split('*')[1] for i in range(self.num_channels)]
+			self.simulation_flag = (self.comms_port == 'none')
+			
 			# Create a root tkinter window, and then hide it.
 			self.root_tk = tk.Tk()
 			self.root_tk.withdraw()
