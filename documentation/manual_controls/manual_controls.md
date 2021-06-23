@@ -6,8 +6,8 @@ Working from left-to-right, we see;
 
 * [Throttle](#Throttle)
 * [Setpoint](#Setpoint)
-* Ramp - [Simple Ramp](#Simple ramp)
-*      - [Program Ramp](#Program ramp)
+* Ramp - [Simple Ramp](#Simple-ramp)
+*      - [Program Ramp](#Program-ramp)
 * [Logging](#Logging)
 * [Control](#Control)
 * [Plotting](#Plotting)
