@@ -6,7 +6,7 @@ Working from left-to-right, we see;
 
 - [Throttle](#throttle)
 - [Setpoint](#setpoint)
-- Ramp
+- [Ramp](#ramp)
     - [Simple Ramp](#simple-ramp)
     - [Program Ramp](#program-ramp)
 - [Logging](#logging)
@@ -26,11 +26,11 @@ Blah...
 
 Blah...
 
-## Simple ramp.
+### Simple ramp.
 
 Blah...
 
-## Program ramp.
+### Program ramp.
 
 Blah...
 
