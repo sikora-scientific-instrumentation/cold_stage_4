@@ -6,12 +6,12 @@ Working from left-to-right, we see;
 
 * [Throttle](#Throttle)
 * [Setpoint](#Setpoint)
-* Ramp - Simple Ramp
-* Ramp - Program Ramp
-* Logging
-* Control
-* Plotting
-* Video
+* Ramp - [Simple Ramp](#Simple ramp)
+*      - [Program Ramp](#Program ramp)
+* [Logging](#Logging)
+* [Control](#Control)
+* [Plotting](#Plotting)
+* [Video](#Video)
 
 ## Throttle.
 
