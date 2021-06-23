@@ -4,14 +4,14 @@ The manual control tabs comprise the cold-stages main control interface, providi
 
 Working from left-to-right, we see;
 
-* [Throttle](#Throttle)
-* [Setpoint](#Setpoint)
-* Ramp - [Simple Ramp](#Simple-ramp)
-*      - [Program Ramp](#Program-ramp)
-* [Logging](#Logging)
-* [Control](#Control)
-* [Plotting](#Plotting)
-* [Video](#Video)
+* [Throttle](#throttle)
+* [Setpoint](#setpoint)
+* Ramp - [Simple Ramp](#simple-ramp)
+*      - [Program Ramp](#program-ramp)
+* [Logging](#logging)
+* [Control](#control)
+* [Plotting](#plotting)
+* [Video](#video)
 
 ## Throttle.
 
