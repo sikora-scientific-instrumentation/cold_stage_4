@@ -12,6 +12,7 @@ Temperature Control Modes:
 - [Ramp](#ramp)
     - [Simple Ramp](#simple-ramp)
     - [Program Ramp](#program-ramp)
+
 Cold-stage configuration:
 - [Logging](#logging)
 - [Control](#control)
