@@ -7,17 +7,17 @@ The manual control tabs comprise the cold-stages main control interface, providi
 Working from left-to-right, we see;
 
 Temperature Control Modes:
-- [Throttle](#throttle)
-- [Setpoint](#setpoint)
+- [Throttle](#throttle): Runs the cold-stage at a stipulated heating/cooling power (%)
+- [Setpoint](#setpoint): Runs the cold-stage at a stipulated temperature (deg C).
 - [Ramp](#ramp)
-    - [Simple Ramp](#simple-ramp)
-    - [Program Ramp](#program-ramp)
+    - [Simple Ramp](#simple-ramp): Blah...
+    - [Program Ramp](#program-ramp): Blah...
 
 Cold-stage configuration:
-- [Logging](#logging)
-- [Control](#control)
-- [Plotting](#plotting)
-- [Video](#video)
+- [Logging](#logging): Blah...
+- [Control](#control): Blah...
+- [Plotting](#plotting): Blah...
+- [Video](#video): Blah...
 
 ## Throttle.
 
