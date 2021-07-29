@@ -7,7 +7,7 @@
 ########################################################################
 
 	This file is part of Cold Stage 4.
-	PRE RELEASE 3
+	PRE RELEASE 3.1
 
 	Cold Stage 4 is free software: you can redistribute it and/or 
 	modify it under the terms of the GNU General Public License as 
@@ -97,8 +97,10 @@ class FrontEnd():
 		self.GenerateTKWindow()
 		if self.video_enabled:
 			self.GenerateTKVideoWindow()
-		self.calibration_widget = CalibrationWidget.CalibrationWidget(self, self.channel_id, self.comms_unique_id, self.root_tk, self.device_parameter_defaults, self.mq_front_to_back, self.event_back_to_front)
-		self.drop_assay_widget = DropAssayWidget.DropAssayWidget(self, self.channel_id, self.root_tk, self.device_parameter_defaults, self.mq_front_to_back, self.event_back_to_front)
+		self.calibration_widget = CalibrationWidget.CalibrationWidget(self, self.channel_id, self.comms_unique_id, self.root_tk, 
+																		self.device_parameter_defaults, self.mq_front_to_back, self.event_back_to_front)
+		self.drop_assay_widget = DropAssayWidget.DropAssayWidget(self, self.channel_id, self.root_tk, self.device_parameter_defaults, 
+																	self.mq_front_to_back, self.event_back_to_front)
 		
 		# Run UpdatePoll to begin checking for messages from the backend process.
 		self.UpdatePoll()
@@ -166,10 +168,11 @@ class FrontEnd():
 						self.EnableFrontEndRampControls()
 						if ((self.logging_flag == True) and (self.checkButton_pr_log_end_on_profile_end_value.get() == True)):
 							# Reset the logging controls to their default state.
-							self.checkButton_log_video_split.configure(state = NORMAL)
-							self.button_log_off.configure(state = DISABLED)
-							self.button_log_on.configure(state = DISABLED)
-							self.button_log_select.configure(state = NORMAL)
+							#~self.checkButton_log_video_split.configure(state = NORMAL)
+							#~self.button_log_off.configure(state = DISABLED)
+							#~self.button_log_on.configure(state = DISABLED)
+							#~self.button_log_select.configure(state = NORMAL)
+							self.EnableFrontEndLoggingControls()
 							self.logging_flag = False
 					self.label_mode.configure(text = most_recent_message[2])
 				elif most_recent_message[1] == 'Set_temp_limits':
@@ -1124,7 +1127,8 @@ class FrontEnd():
 			self.previous_log_video_split_flag = self.device_parameter_defaults['log_video_split_flag'][self.channel_id]
 			self.log_video_split_flag.set(self.device_parameter_defaults['log_video_split_flag'][self.channel_id])
 			self.log_video_split_flag.trace_id = self.log_video_split_flag.trace("w", self.ChangeLogVideoSplitFlag)
-			self.checkButton_log_video_split = tk.Checkbutton(self.video_config_frame, text = "Log video split?", variable = self.log_video_split_flag, onvalue = True, offvalue = False)
+			self.checkButton_log_video_split = tk.Checkbutton(self.video_config_frame, text = "Log video split?", 
+																variable = self.log_video_split_flag, onvalue = True, offvalue = False)
 			self.checkButton_log_video_split.pack(side = "top", pady = (5, 0), expand = "false", fill = tk.X)
 		
 		# On/off buttons frame:
@@ -1197,7 +1201,8 @@ class FrontEnd():
 		self.comms_fault_window.resizable(False, False)
 		self.comms_fault_frame = tk.Frame(self.comms_fault_window, bd = 1, relief = tk.RIDGE)
 		self.comms_fault_frame.pack(side = "top", expand = "false", fill = tk.BOTH)
-		self.label_comms_fault = tkinter.ttk.Label(self.comms_fault_frame, text="Serial fault!\n\nPlease check connections while attempting to recover or click below to abandon and shut down.", font = ("Arial", 12), justify = "center")
+		self.label_comms_fault = tkinter.ttk.Label(self.comms_fault_frame, text="Serial fault!\n\nPlease check connections while attempting to recover or click below to abandon and shut down.", 
+													font = ("Arial", 12), justify = "center")
 		self.label_comms_fault.pack(side="top", expand="false", pady = (5, 0))
 		self.button_comms_fault = tk.Button(self.comms_fault_frame, text="Shut down", font = ("Arial", 14), command=self.AllShutDown)
 		self.button_comms_fault.pack(side = "top", expand = "true", pady = (5, 5))
@@ -1214,7 +1219,8 @@ class FrontEnd():
 		self.flow_fault_window.resizable(False, False)
 		self.flow_fault_frame = tk.Frame(self.flow_fault_window, bd = 1, relief = tk.RIDGE)
 		self.flow_fault_frame.pack(side = "top", expand = "true", fill = tk.BOTH)
-		self.label_flow_fault = tkinter.ttk.Label(self.flow_fault_frame, text="Coolant flow rate < 1.0 l/min\n\nCheck coolant pump and connections or click below to abandon and shut down.", font = ("Arial", 12), justify = "center")
+		self.label_flow_fault = tkinter.ttk.Label(self.flow_fault_frame, text="Coolant flow rate < 1.0 l/min\n\nCheck coolant pump and connections or click below to abandon and shut down.", 
+													font = ("Arial", 12), justify = "center")
 		self.label_flow_fault.pack(side="top", expand="false", pady = (5, 0))
 		self.button_flow_fault = tk.Button(self.flow_fault_frame, text="Shut down", font = ("Arial", 14), command=self.FlowFaultShutDown)
 		self.button_flow_fault.pack(side = "top", expand = "false", pady = (5, 5))
@@ -1235,7 +1241,9 @@ class FrontEnd():
 		self.video_fault_window.resizable(False, False)
 		self.video_fault_frame = tk.Frame(self.video_fault_window, bd = 1, relief = tk.RIDGE)
 		self.video_fault_frame.pack(side = "top", expand = "true", fill = tk.BOTH)
-		self.label_video_fault = tkinter.ttk.Label(self.video_fault_frame, text="Video device fault!\n\nCheck connections or click below to abandon and shut down.", font = ("Arial", 12), justify = "center")
+		self.label_video_fault = tkinter.ttk.Label(self.video_fault_frame, 
+													text="Video device fault!\n\nCheck connections or click below to abandon and shut down.", 
+													font = ("Arial", 12), justify = "center")
 		self.label_video_fault.pack(side="top", expand="false", pady = (5, 0))
 		self.button_video_fault = tk.Button(self.video_fault_frame, text="Shut down", font = ("Arial", 14), command=self.VideoFaultShutDown)
 		self.button_video_fault.pack(side = "top", expand = "false", pady = (5, 5))
@@ -1274,7 +1282,9 @@ class FrontEnd():
 		pass
 		
 	def ClicksAreActive(self):
-		return ((self.video_fault_warning_open == False) and (self.generic_warning_window_open == False) and (self.flow_fault_warning_open == False) and (self.comms_fault_warning_open == False) and (self.calibration_widget.window_open_flag == False) and (self.drop_assay_widget.window_open_flag == False))
+		return ((self.video_fault_warning_open == False) and (self.generic_warning_window_open == False) and 
+					(self.flow_fault_warning_open == False) and (self.comms_fault_warning_open == False) and 
+					(self.calibration_widget.window_open_flag == False) and (self.drop_assay_widget.window_open_flag == False))
 	
 	def ChangeVideoResolution(self, *args):
 		if self.ClicksAreActive() == True:
@@ -1330,7 +1340,8 @@ class FrontEnd():
 				self.modal_interface_window.withdraw()
 				self.modal_dialog_open = True
 				try:
-					choice = tkinter.messagebox.askquestion("Shutdown", "The channel is running, are you sure you want to shut down?", icon = 'warning', parent = self.modal_interface_window)
+					choice = tkinter.messagebox.askquestion("Shutdown", "The channel is running, are you sure you want to shut down?", icon = 'warning', 
+															parent = self.modal_interface_window)
 				except:
 					choice = 'no'
 				if self.modal_dialog_open == True:
@@ -1400,7 +1411,7 @@ class FrontEnd():
 	
 	def AreFaultWarningsOpen(self):
 		for front_end in self.parent.front_ends:
-			if ((front_end.comms_fault_warning_open == True) or (front_end.video_fault_warning_open == True) or (front_end.flow_fault_warning_open == True) or (front_end.generic_warning_window_open == True)):
+			if ((front_end.comms_fault_warning_open == True) or (front_end.video_fault_warning_open == True) or 
+				(front_end.flow_fault_warning_open == True) or (front_end.generic_warning_window_open == True)):
 				return True
 		return False
-		
