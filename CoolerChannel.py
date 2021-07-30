@@ -7,7 +7,7 @@
 ########################################################################
 
 	This file is part of Cold Stage 4.
-	PRE RELEASE 3.1
+	PRE RELEASE 3.2
 
 	Cold Stage 4 is free software: you can redistribute it and/or 
 	modify it under the terms of the GNU General Public License as 
@@ -228,7 +228,11 @@ class CoolerChannel():
 								log_file_video_fault_flag = 'VIDEO_FAULT'
 						else:
 							log_file_video_fault_flag = 'VIDEO_DISABLED'
-						self.mq_back_to_logger.put((str(round(self.current_time - self.logging_start_time, 3)) + ', ' + str(self.logging_counter) + ', ' + str(sp) + ', ' + str(round(self.temperature, 3)) + ', ' + str(round(self.PRT_temperature, 3)) + ', ' + str(round(self.flow_rate, 3)) + ', ' + log_file_video_fault_flag))
+						if self.mode == 'idle':
+							log_throttle_value = 'NA'
+						else:
+							log_throttle_value = str(round(self.throttle_setting, 2))
+						self.mq_back_to_logger.put((str(round(self.current_time - self.logging_start_time, 3)) + ', ' + str(self.logging_counter) + ', ' + str(sp) + ', ' + str(round(self.temperature, 3)) + ', ' + str(round(self.PRT_temperature, 3)) + ', ' + str(round(self.flow_rate, 3)) + ', ' + log_throttle_value + ', ' + log_file_video_fault_flag))
 						self.logging_sub_counter = 1
 						self.logging_counter += 1
 					else:
@@ -385,7 +389,7 @@ class CoolerChannel():
 		self.logger_thread = Thread.Thread(target = Logger.Logger, args = (self.mq_back_to_logger, file_path))
 		self.logger_thread.start()
 		print('Logger for channel ' + str(self.channel_id) + ' started...')
-		message_to_logger = 'Time (secs), Frame Number, Setpoint (°C), TC Temperature (°C), PRT Temperature (°C), Coolant Flowrate (L/min)'
+		message_to_logger = 'Time (secs), Frame Number, Setpoint (°C), TC Temperature (°C), PRT Temperature (°C), Coolant Flowrate (L/min), Throttle (%)'
 		if self.video_enabled_flag == True:
 			message_to_logger = message_to_logger + ', Video Fault Flag'
 		self.mq_back_to_logger.put((message_to_logger))

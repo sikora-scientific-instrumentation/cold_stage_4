@@ -1,6 +1,6 @@
-Cold Stage 4 - PRE-RELEASE 3.1
+Cold Stage 4 - PRE-RELEASE 3.2
 ------------------------------
-Updated 22/06/2021.
+Updated 30/07/2021.
 
 A software program for the control of a solid-state experimental temperature control platform.
 
@@ -10,7 +10,7 @@ Installation requirements:
 
 Linux specific:
 * Install linux package v4l-utils >=1.12.3-1
-* Add user to linux users group 'dialout' to give full access to usb serial port
+* Add user to linux users group 'dialout' to give full access to usb serial port `sudo adduser user_name dialout`
 
 Python:
 * Install Anaconda Python 3 >= 3.8.5
