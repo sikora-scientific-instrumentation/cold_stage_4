@@ -33,7 +33,8 @@ import crcmod.predefined
 import CoolerModel
 
 class FakeDuino():
-	def __init__ (self, num_channels, time_step, object_temp_deg_c, fluid_temp_deg_c, heatsink_temp_deg_c, measurement_noise_sd, measurement_quantization_per_deg):
+	def __init__ (self, device_parameter_defaults, num_channels, time_step, object_temp_deg_c, fluid_temp_deg_c, heatsink_temp_deg_c, measurement_noise_sd, measurement_quantization_per_deg):
+		self.device_parameter_defaults = device_parameter_defaults
 		self.unique_id = 0
 		self.welcome_string = 'simulation_test_device'
 		self.start_timestamp = time.time()
@@ -55,7 +56,7 @@ class FakeDuino():
 		self.heatsink_temp_deg_c = heatsink_temp_deg_c
 		self.measurement_noise_sd = measurement_noise_sd
 		self.measurement_quantization_per_deg = measurement_quantization_per_deg
-		self.models = [CoolerModel.CoolerModel(self.object_temp_deg_c, self.fluid_temp_deg_c, self.heatsink_temp_deg_c, self.measurement_noise_sd, self.measurement_quantization_per_deg) for i in range(self.num_channels)]
+		self.models = [CoolerModel.CoolerModel(self.device_parameter_defaults, self.object_temp_deg_c, self.fluid_temp_deg_c, self.heatsink_temp_deg_c, self.measurement_noise_sd, self.measurement_quantization_per_deg) for i in range(self.num_channels)]
 		
 		self.prt_diff_slope = 1.1
 		self.prt_diff_offset = -0.1

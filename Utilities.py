@@ -76,19 +76,30 @@ class PIDController():
 		self.I = pid_coeffs['I']
 		self.D = pid_coeffs['D']
 		self.drive_mode = drive_mode
+
 	def Initialise(self, current_temp, setpoint):
 		self.current_temp = current_temp
 		self.setpoint = setpoint
 		self.error = self.current_temp - self.setpoint
 		self.integral_error = 0.0
 		self.output = 0.0
+
 	def Update(self, measurement):
 		error = float(measurement) - self.setpoint
 		self.delta_error = error - self.error
 		self.error = error
+		
 		self.integral_error += (self.error * self.time_step) 
 		self.delta_output = (self.P * self.error) + (self.I * self.integral_error) + (self.D * self.delta_error * (1.0 / self.time_step))
 		self.output += self.delta_output
+		
+		# ~self.integral_error += (self.error * self.time_step)
+		# ~if (self.I * self.integral_error) > 100.0:
+			# ~self.integral_error = 100.0 / self.I
+		# ~elif (self.I *self.integral_error) < -100.0:
+			# ~self.integral_error = -100.0 / self.I
+		# ~self.delta_output = (self.P * self.error) + (self.I * self.integral_error) + (self.D * self.delta_error * (1.0 / self.time_step))
+		# ~self.output = self.delta_output
 		
 		if self.drive_mode == 1:
 			# Heating only mode...
@@ -139,8 +150,10 @@ class Fluid():
 		return np.polyval(self.properties[property_name]['fit_coeffs'], temperature)
 
 class PeltierCooler():
-	def __init__(self, max_cooling_power, heatsink_temperature, number_of_elements, element_width, element_length, element_thermal_conductivity):
+	def __init__(self, device_parameter_defaults, max_cooling_power, heatsink_temperature, number_of_elements, element_width, element_length, element_thermal_conductivity):
+		self.device_parameter_defaults = device_parameter_defaults
 		self.heatsink_temperature = heatsink_temperature
+		self.heatsink_timestamp = 0.0
 		self.number_of_elements = number_of_elements
 		self.element_width = element_width
 		self.element_length = element_length
@@ -148,14 +161,25 @@ class PeltierCooler():
 		self.throttle_percent = 0
 		self.maximum_cooling_power = max_cooling_power
 		self.current_cooling_power = 0.0
+
 	def ConductiveHeatTransfer(self, delta_t):
 		return self.number_of_elements * (self.element_thermal_conductivity * (self.element_width ** 2) * (delta_t / self.element_length))
+
 	def SetThrottle(self, throttle_percent):
 		self.throttle_percent = float(throttle_percent)
 		self.current_cooling_power = float((self.maximum_cooling_power / 100.0) * self.throttle_percent)
 
+	def GetHeatSinkTemperature(self, time_period):
+		if self.device_parameter_defaults['simulation_hsk_temp_variation_active'] == True:
+			self.heatsink_timestamp += time_period
+			heatsink_temperature = self.heatsink_temperature + (self.device_parameter_defaults['simulation_hsk_temp_variation_amplitude'] * np.sin(self.heatsink_timestamp * ((2 * np.pi) / self.device_parameter_defaults['simulation_hsk_temp_variation_period'])))
+		else:
+			heatsink_temperature = self.heatsink_temperature
+		return heatsink_temperature
+
 class CooledObject():
-	def __init__(self, temperature, edge_length, thickness, density, specific_heat_capacity):
+	def __init__(self, device_parameter_defaults, temperature, edge_length, thickness, density, specific_heat_capacity):
+		self.device_parameter_defaults = device_parameter_defaults
 		self.temperature = temperature
 		self.edge_length = float(edge_length)
 		self.thickness = float(thickness)
@@ -167,6 +191,7 @@ class CooledObject():
 		self.length_parameter = self.cooled_area / (self.edge_length * 4.0)
 		self.conductive_heat_transfer = 0.0
 		self.temperature_change_rate = 0.0
+
 	def ConvectiveHeatTransfer(self, fluid, delta_t):
 		boundary_temperature = fluid.bulk_temperature + delta_t
 		film_temperature = (fluid.bulk_temperature + boundary_temperature) / 2.0
@@ -182,6 +207,7 @@ class CooledObject():
 		coefficient_of_convective_heat_transfer = (nusselt_number * (fluid.GetProperties(film_temperature, 'ThermalConductivity') * 1e-2)) / self.length_parameter
 		heat_transfer_rate = coefficient_of_convective_heat_transfer * self.cooled_area * delta_t
 		return {'Rayleigh Number' : rayleigh_number, 'Convective Heat Transfer Coefficient' : coefficient_of_convective_heat_transfer, 'Heat Transfer Rate' : heat_transfer_rate}
+
 	def UpdateTemperature(self, fluid, peltier_cooler, integration_time, sub_time_steps):
 		integration_time = float(integration_time)
 		sub_time_step = integration_time / float(sub_time_steps)
@@ -189,10 +215,14 @@ class CooledObject():
 		self.sub_times = []
 		self.sub_temperatures = []
 		self.sub_rates = []
+		hst = 0.0
 		for i in range(sub_time_steps):
 			self.sub_times.append(sub_time)
 			self.sub_temperatures.append(self.temperature)
-			heatsink_object_delta_t = self.temperature - peltier_cooler.heatsink_temperature
+			# ~heatsink_object_delta_t = self.temperature - peltier_cooler.heatsink_temperature
+			heatsink_temperature = peltier_cooler.GetHeatSinkTemperature(sub_time_step)
+			hst = heatsink_temperature
+			heatsink_object_delta_t = self.temperature - heatsink_temperature
 			bulk_fluid_object_delta_t = self.temperature - fluid.bulk_temperature
 			conductive_heat_transfer = peltier_cooler.ConductiveHeatTransfer(heatsink_object_delta_t)
 			convective_heat_transfer = self.ConvectiveHeatTransfer(fluid, bulk_fluid_object_delta_t)
@@ -203,6 +233,8 @@ class CooledObject():
 			self.temperature += delta_t
 			self.sub_rates.append((delta_t * (1.0 / (integration_time / float(sub_time_steps)))))
 			sub_time += (integration_time / float(sub_time_steps))
+		if self.device_parameter_defaults['simulation_display_hsk_temp'] == True:
+			print(hst - 273.15)
 		return self.temperature
 
 class KalmanFilter():

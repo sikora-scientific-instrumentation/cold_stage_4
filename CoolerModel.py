@@ -29,15 +29,16 @@ import Utilities
 import time
 
 class CoolerModel():
-	def __init__ (self, object_temp_deg, fluid_temp_deg, heat_sink_temp_deg, measurement_noise_sd, measurement_quantization_steps_per_deg):
+	def __init__ (self, device_parameter_defaults, object_temp_deg, fluid_temp_deg, heat_sink_temp_deg, measurement_noise_sd, measurement_quantization_steps_per_deg):
+		self.device_parameter_defaults = device_parameter_defaults
 		self.measurement_noise_sd = measurement_noise_sd
 		self.measurement_quantization_steps_per_deg = measurement_quantization_steps_per_deg
 		self.object_temp_k = 273.15 + object_temp_deg
 		self.fluid_temp_k = 273.15 + fluid_temp_deg
 		self.heat_sink_temp_k = 273.15 + heat_sink_temp_deg
 		self.air = Utilities.Fluid('air', 'air_properties.csv', self.fluid_temp_k)
-		self.cooler = Utilities.PeltierCooler(6.5, self.heat_sink_temp_k, 64.0, 0.002, 0.002, 1.2)
-		self.obj = Utilities.CooledObject(self.object_temp_k, 0.022, 0.003, 2700.0, 921.096)
+		self.cooler = Utilities.PeltierCooler(self.device_parameter_defaults, 6.5, self.heat_sink_temp_k, 64.0, 0.002, 0.002, 1.2)
+		self.obj = Utilities.CooledObject(self.device_parameter_defaults, self.object_temp_k, 0.022, 0.003, 2700.0, 921.096)
 		self.last_timestamp = time.time()
 		
 	def UpdateTemperature(self):

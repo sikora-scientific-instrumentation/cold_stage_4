@@ -772,7 +772,7 @@ class FrontEnd():
 		if self.video_enabled == True:
 			self.checkButton_log_video_split.configure(state = NORMAL)
 		self.button_log_off.configure(state = DISABLED)
-		self.button_log_on.configure(state = DISABLED)
+		self.button_log_on.configure(state = NORMAL)
 		self.button_log_select.configure(state = NORMAL)
 	
 	def StopLogging(self):

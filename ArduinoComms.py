@@ -154,7 +154,7 @@ class ArduinoComms():
 				#~time.sleep(1.0)
 				self.serial_connection.reset_input_buffer()
 			else:
-				self.serial_connection = FakeDuino.FakeDuino(self.parent.device_parameter_defaults['simulation_number_of_channels'], self.parent.device_parameter_defaults['time_step'], 4.0, 20.0, 1.0, 0.01, 25)
+				self.serial_connection = FakeDuino.FakeDuino(self.parent.device_parameter_defaults, self.parent.device_parameter_defaults['simulation_number_of_channels'], self.parent.device_parameter_defaults['time_step'], 20.0, 22.0, 20.0, 0.01, 25)
 			success_flag = True
 			print("...success!")
 		except:

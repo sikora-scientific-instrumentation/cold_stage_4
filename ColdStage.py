@@ -46,10 +46,15 @@ class CoolerControl():
 	def __init__ (self):
 		self.device_parameter_defaults = {
 			# Device defaults.
-			'simulation_number_of_channels': 1,
 			'comms_baud_rate': 57600,
 			'timing_info_flag' : 0,
 			'time_step' : 0.2,
+			# Simulation defaults.
+			'simulation_number_of_channels': 1,
+			'simulation_hsk_temp_variation_active': True,
+			'simulation_hsk_temp_variation_amplitude': 0.5,
+			'simulation_hsk_temp_variation_period': 40.0,
+			'simulation_display_hsk_temp': False,
 			# Channel defaults.
 			#	Logging
 			'stop_logging_at_profile_end_flag' : [1, 1, 1, 1],
