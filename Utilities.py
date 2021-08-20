@@ -70,7 +70,8 @@ class DriftFreeTimer():
 
 
 class PIDController():
-	def __init__(self, time_step, pid_coeffs, drive_mode):
+	def __init__(self, device_parameter_defaults, time_step, pid_coeffs, drive_mode):
+		self.device_parameter_defaults = device_parameter_defaults
 		self.time_step = float(time_step)
 		self.P = pid_coeffs['P']
 		self.I = pid_coeffs['I']
@@ -88,11 +89,20 @@ class PIDController():
 		error = float(measurement) - self.setpoint
 		self.delta_error = error - self.error
 		self.error = error
-		
 		self.integral_error += (self.error * self.time_step) 
-		self.delta_output = (self.P * self.error) + (self.I * self.integral_error) + (self.D * self.delta_error * (1.0 / self.time_step))
-		self.output += self.delta_output
 		
+		# Peltier module is not a symetrically bi-directional heat pump as waste heat is always emitted from the 'hot' side.
+		# Therefore, due to it's low efficiency Peltier module is ~3-5 times more powerful as a heater than as a cooler.
+		# For this reason, if we are in 'heating' mode (ie, negative throttle position) we need to correspondingly re-scale
+		# our control coefficients.
+		peltier_power_ratio = self.device_parameter_defaults['peltier_power_ratio']
+		if self.output >= 0.0:
+			P, I, D = (self.P, self.I, self.D)
+		else:
+			P, I, D = (self.P / peltier_power_ratio, self.I / peltier_power_ratio, self.D / peltier_power_ratio)
+		self.delta_output = (P * self.error) + (I * self.integral_error) + (D * self.delta_error * (1.0 / self.time_step))
+		self.output += self.delta_output
+
 		# ~self.integral_error += (self.error * self.time_step)
 		# ~if (self.I * self.integral_error) > 100.0:
 			# ~self.integral_error = 100.0 / self.I
@@ -101,6 +111,7 @@ class PIDController():
 		# ~self.delta_output = (self.P * self.error) + (self.I * self.integral_error) + (self.D * self.delta_error * (1.0 / self.time_step))
 		# ~self.output = self.delta_output
 		
+		# Apply Peltier drive limits.
 		if self.drive_mode == 1:
 			# Heating only mode...
 			if self.output > 0.0:
@@ -167,7 +178,13 @@ class PeltierCooler():
 
 	def SetThrottle(self, throttle_percent):
 		self.throttle_percent = float(throttle_percent)
-		self.current_cooling_power = float((self.maximum_cooling_power / 100.0) * self.throttle_percent)
+		if self.throttle_percent >= 0.0:
+			# We are 'cooling', power as normal.
+			pumping_power = self.maximum_cooling_power
+		else:
+			# We are 'heating', power is increased to account for waste heat output.
+			pumping_power = self.maximum_cooling_power * self.device_parameter_defaults['simulation_peltier_power_ratio']
+		self.current_cooling_power = float((pumping_power / 100.0) * self.throttle_percent)
 
 	def GetHeatSinkTemperature(self, time_period):
 		if self.device_parameter_defaults['simulation_hsk_temp_variation_active'] == True:

@@ -49,9 +49,11 @@ class CoolerControl():
 			'comms_baud_rate': 57600,
 			'timing_info_flag' : 0,
 			'time_step' : 0.2,
+			'peltier_power_ratio': 1.0,
 			# Simulation defaults.
 			'simulation_number_of_channels': 1,
-			'simulation_hsk_temp_variation_active': True,
+			'simulation_peltier_power_ratio': 8.0,
+			'simulation_hsk_temp_variation_active': False,
 			'simulation_hsk_temp_variation_amplitude': 0.5,
 			'simulation_hsk_temp_variation_period': 40.0,
 			'simulation_display_hsk_temp': False,
@@ -59,7 +61,7 @@ class CoolerControl():
 			#	Logging
 			'stop_logging_at_profile_end_flag' : [1, 1, 1, 1],
 			'start_logging_at_profile_start_flag' : [1, 1, 1, 1],
-			'logging_rate' : [5, 5, 5, 5],
+			'logging_rate' : [1, 5, 5, 5],
 			#	Plotting
 			'enable_plotting_flag' : [1, 0, 0, 0],
 			'plot_update_rate' : [5, 5, 5, 5],
@@ -71,7 +73,7 @@ class CoolerControl():
 			'log_video_split_flag' : [0, 0, 0, 0],
 			#	Control
 			'drive_mode' : [2, 2, 2, 2],
-			'pid_coefficients': [{'P' : 0.4, 'I': 0.0, 'D': 2.1}, {'P' : 0.4, 'I': 0.0, 'D': 2.1}, {'P' : 0.4, 'I': 0.0, 'D': 2.1}, {'P' : 0.4, 'I': 0.0, 'D': 2.1}],
+			'pid_coefficients': [{'P' : 3.0, 'I': 0.0, 'D': 9.0}, {'P' : 0.4, 'I': 0.0, 'D': 2.1}, {'P' : 0.4, 'I': 0.0, 'D': 2.1}, {'P' : 0.4, 'I': 0.0, 'D': 2.1}],
 			'max_temperature_limit': [30.0, 30.0, 30.0, 30.0],
 			'min_temperature_limit': [-45.0, -45.0, -45.0, -45.0],
 			'overload_fault_threshold_seconds': 10.0,
@@ -223,7 +225,7 @@ class CoolerControl():
 			if front_end.drop_assay_widget.modal_dialog_open == True:
 				front_end.drop_assay_widget.modal_dialog_open = False
 				front_end.drop_assay_widget.modal_interface_window.destroy()
+
 				
-	
 if __name__ == '__main__':
 	cooler_control = CoolerControl()

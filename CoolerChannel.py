@@ -96,7 +96,7 @@ class CoolerChannel():
 					self.flow_rate = float(responses[2])
 					
 					# Instantiate a PID controller object.
-					self.pd = Utilities.PIDController(self.time_step, self.pid_coeffs, self.drive_mode)
+					self.pd = Utilities.PIDController(self.device_parameter_defaults, self.time_step, self.pid_coeffs, self.drive_mode)
 					
 					# Instantiate a RampManager object.
 					self.ramp_manager = RampManager.RampManager(self, self.mode, self.time_step)
