@@ -7,7 +7,7 @@
 ########################################################################
 
 	This file is part of Cold Stage 4.
-	PRE RELEASE 3.2
+	PRE RELEASE 3.4
 
 	Cold Stage 4 is free software: you can redistribute it and/or 
 	modify it under the terms of the GNU General Public License as 
@@ -76,6 +76,7 @@ class PIDController():
 		self.P = pid_coeffs['P']
 		self.I = pid_coeffs['I']
 		self.D = pid_coeffs['D']
+		self.power_multiplier = pid_coeffs['power_multiplier']
 		self.drive_mode = drive_mode
 
 	def Initialise(self, current_temp, setpoint):
@@ -95,11 +96,10 @@ class PIDController():
 		# Therefore, due to it's low efficiency Peltier module is ~3-5 times more powerful as a heater than as a cooler.
 		# For this reason, if we are in 'heating' mode (ie, negative throttle position) we need to correspondingly re-scale
 		# our control coefficients.
-		peltier_power_ratio = self.device_parameter_defaults['peltier_power_ratio']
 		if self.output >= 0.0:
 			P, I, D = (self.P, self.I, self.D)
 		else:
-			P, I, D = (self.P / peltier_power_ratio, self.I / peltier_power_ratio, self.D / peltier_power_ratio)
+			P, I, D = (self.P / self.power_multiplier, self.I / self.power_multiplier, self.D / self.power_multiplier)
 		self.delta_output = (P * self.error) + (I * self.integral_error) + (D * self.delta_error * (1.0 / self.time_step))
 		self.output += self.delta_output
 

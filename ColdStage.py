@@ -11,7 +11,7 @@
 ########################################################################
 
 	This file is part of Cold Stage 4.
-	PRE RELEASE 3.2
+	PRE RELEASE 3.4
 
 	Cold Stage 4 is free software: you can redistribute it and/or 
 	modify it under the terms of the GNU General Public License as 
@@ -49,7 +49,6 @@ class CoolerControl():
 			'comms_baud_rate': 57600,
 			'timing_info_flag' : 0,
 			'time_step' : 0.2,
-			'peltier_power_ratio': 1.0,
 			# Simulation defaults.
 			'simulation_number_of_channels': 1,
 			'simulation_peltier_power_ratio': 8.0,
@@ -73,7 +72,7 @@ class CoolerControl():
 			'log_video_split_flag' : [0, 0, 0, 0],
 			#	Control
 			'drive_mode' : [2, 2, 2, 2],
-			'pid_coefficients': [{'P' : 3.0, 'I': 0.0, 'D': 9.0}, {'P' : 0.4, 'I': 0.0, 'D': 2.1}, {'P' : 0.4, 'I': 0.0, 'D': 2.1}, {'P' : 0.4, 'I': 0.0, 'D': 2.1}],
+			'pid_coefficients': [{'P' : 3.0, 'I': 0.0, 'D': 9.0, 'power_multiplier': 1.0}, {'P' : 0.4, 'I': 0.0, 'D': 2.1, 'power_multiplier': 1.0}, {'P' : 0.4, 'I': 0.0, 'D': 2.1, 'power_multiplier': 1.0}, {'P' : 0.4, 'I': 0.0, 'D': 2.1, 'power_multiplier': 1.0}],
 			'max_temperature_limit': [30.0, 30.0, 30.0, 30.0],
 			'min_temperature_limit': [-45.0, -45.0, -45.0, -45.0],
 			'overload_fault_threshold_seconds': 10.0,

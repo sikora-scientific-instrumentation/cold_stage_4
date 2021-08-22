@@ -7,7 +7,7 @@
 ########################################################################
 
 	This file is part of Cold Stage 4.
-	PRE RELEASE 3.2
+	PRE RELEASE 3.4
 
 	Cold Stage 4 is free software: you can redistribute it and/or 
 	modify it under the terms of the GNU General Public License as 
@@ -290,6 +290,7 @@ class CoolerChannel():
 			self.pd.P = float(most_recent_message[1])
 			self.pd.I = float(most_recent_message[2])
 			self.pd.D = float(most_recent_message[3])
+			self.pd.power_multiplier = float(most_recent_message[4])
 		elif most_recent_message[0] == 'LoggingRate':
 			self.logging_rate = float(most_recent_message[1])
 		elif most_recent_message[0] == 'StartLogging':

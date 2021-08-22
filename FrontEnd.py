@@ -7,7 +7,7 @@
 ########################################################################
 
 	This file is part of Cold Stage 4.
-	PRE RELEASE 3.2
+	PRE RELEASE 3.4
 
 	Cold Stage 4 is free software: you can redistribute it and/or 
 	modify it under the terms of the GNU General Public License as 
@@ -593,9 +593,11 @@ class FrontEnd():
 		if self.ClicksAreActive() == True:
 			try:
 				new_P_value = float(self.entry_P.get())
-				new_I_value = float(self.entry_I.get())
+				# ~new_I_value = float(self.entry_I.get())
+				new_I_value = 0.0
 				new_D_value = float(self.entry_D.get())
-				self.mq_front_to_back.put(('PIDConfig', new_P_value, new_I_value, new_D_value))
+				new_power_multiplier_value = float(self.entry_power_multiplier.get())
+				self.mq_front_to_back.put(('PIDConfig', new_P_value, new_I_value, new_D_value, new_power_multiplier_value))
 			except:
 				self.GenerateGenericWarningWindow("Warning", "Coefficients must be numerical.")
 	
@@ -1065,13 +1067,13 @@ class FrontEnd():
 		self.entry_P.pack(side="right", pady = (5, 0), expand="false")
 		self.entry_P.insert(0, self.device_parameter_defaults['pid_coefficients'][self.channel_id]['P'])
 		
-		self.I_coefficient_frame = tkinter.ttk.Frame(self.control_config_frame, borderwidth = 1)
-		self.I_coefficient_frame.pack(side = "top", expand = "false", fill = tk.X)
-		self.label_I = tkinter.ttk.Label(self.I_coefficient_frame, text="I coefficient:")
-		self.label_I.pack(side="left", pady = (5, 0), expand="false")
-		self.entry_I = tkinter.ttk.Entry(self.I_coefficient_frame)
-		self.entry_I.pack(side="right", pady = (5, 0), expand="false")
-		self.entry_I.insert(0, self.device_parameter_defaults['pid_coefficients'][self.channel_id]['I'])
+		# ~self.I_coefficient_frame = tkinter.ttk.Frame(self.control_config_frame, borderwidth = 1)
+		# ~self.I_coefficient_frame.pack(side = "top", expand = "false", fill = tk.X)
+		# ~self.label_I = tkinter.ttk.Label(self.I_coefficient_frame, text="I coefficient:")
+		# ~self.label_I.pack(side="left", pady = (5, 0), expand="false")
+		# ~self.entry_I = tkinter.ttk.Entry(self.I_coefficient_frame)
+		# ~self.entry_I.pack(side="right", pady = (5, 0), expand="false")
+		# ~self.entry_I.insert(0, self.device_parameter_defaults['pid_coefficients'][self.channel_id]['I'])
 		
 		self.D_coefficient_frame = tkinter.ttk.Frame(self.control_config_frame, borderwidth = 1)
 		self.D_coefficient_frame.pack(side = "top", expand = "false", fill = tk.X)
@@ -1081,7 +1083,15 @@ class FrontEnd():
 		self.entry_D.pack(side="right", pady = (5, 0), expand="false")
 		self.entry_D.insert(0, self.device_parameter_defaults['pid_coefficients'][self.channel_id]['D'])
 		
-		self.button_apply_control = tkinter.ttk.Button(self.control_config_frame, text="Apply new coefficients", command=self.PIDConfig)
+		self.power_multiplier_frame = tkinter.ttk.Frame(self.control_config_frame, borderwidth = 1)
+		self.power_multiplier_frame.pack(side = "top", expand = "false", fill = tk.X)
+		self.label_power_multiplier = tkinter.ttk.Label(self.power_multiplier_frame, text="Power multiplier:")
+		self.label_power_multiplier.pack(side="left", pady = (5, 0), expand="false")
+		self.entry_power_multiplier = tkinter.ttk.Entry(self.power_multiplier_frame)
+		self.entry_power_multiplier.pack(side="right", pady = (5, 0), expand="false")
+		self.entry_power_multiplier.insert(0, self.device_parameter_defaults['pid_coefficients'][self.channel_id]['power_multiplier'])
+		
+		self.button_apply_control = tkinter.ttk.Button(self.control_config_frame, text="Apply new settings", command=self.PIDConfig)
 		self.button_apply_control.pack(side = "top", pady = (5, 0), expand = "false", fill = tk.X)
 		self.label_timestep = tkinter.ttk.Label(self.control_config_frame, text="Time step (seconds):")
 		self.label_timestep.pack(side="top", pady = (5, 0), expand="false", fill = tk.X)
@@ -1130,6 +1140,9 @@ class FrontEnd():
 			self.checkButton_log_video_split = tk.Checkbutton(self.video_config_frame, text = "Log video split?", 
 																variable = self.log_video_split_flag, onvalue = True, offvalue = False)
 			self.checkButton_log_video_split.pack(side = "top", pady = (5, 0), expand = "false", fill = tk.X)
+
+		# ~if self.comms_unique_id == 0:
+			# ~print('Simulation mode !!!!!!!!!!!!!!!!!!!!!!')
 		
 		# On/off buttons frame:
 		# Create the on/off controls.
