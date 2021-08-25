@@ -7,7 +7,7 @@
 ########################################################################
 
 	This file is part of Cold Stage 4.
-	PRE RELEASE 3.4
+	PRE RELEASE 3.5
 
 	Cold Stage 4 is free software: you can redistribute it and/or 
 	modify it under the terms of the GNU General Public License as 
@@ -62,7 +62,7 @@ class BackEnd():
 		self.comms_success_flag = self.comms_manager.ConnectByID(comms_unique_id)
 		
 		# Instantiate the cooler channels.
-		self.cooler_channels = [CoolerChannel.CoolerChannel(self.device_parameter_defaults, self, i, self.mq_back_to_front[i], self.mq_back_to_vlogger[i], self.event_vlogger_fault[i], self.event_back_to_front[i], self.mq_timestamp[i], self.logging_rates[i], self.drive_mode[i], self.timing_flag, self.video_enabled_flag[i], self.comms_manager, self.time_step, self.device_parameter_defaults['pid_coefficients'][i]) for i in range(self.num_channels)]
+		self.cooler_channels = [CoolerChannel.CoolerChannel(self.device_parameter_defaults, self, i, self.mq_back_to_front[i], self.mq_back_to_vlogger[i], self.event_vlogger_fault[i], self.event_back_to_front[i], self.mq_timestamp[i], self.logging_rates[i], self.drive_mode[i], self.timing_flag, self.video_enabled_flag[i], self.comms_manager, self.time_step, self.device_parameter_defaults['default_pid_coefficients'][i]) for i in range(self.num_channels)]
 		
 		if self.comms_success_flag == True:
 			# Send the datum time to the front ends via the message queue.

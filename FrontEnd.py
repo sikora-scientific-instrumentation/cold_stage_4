@@ -7,7 +7,7 @@
 ########################################################################
 
 	This file is part of Cold Stage 4.
-	PRE RELEASE 3.4
+	PRE RELEASE 3.5
 
 	Cold Stage 4 is free software: you can redistribute it and/or 
 	modify it under the terms of the GNU General Public License as 
@@ -178,8 +178,8 @@ class FrontEnd():
 				elif most_recent_message[1] == 'Set_temp_limits':
 					self.temperature_limits['max'] = float(most_recent_message[2])
 					self.temperature_limits['min'] = float(most_recent_message[3])
-					self.label_current_max_limit_reading.configure(text = most_recent_message[2])
-					self.label_current_min_limit_reading.configure(text = most_recent_message[3])
+					self.label_current_max_limit_reading.configure(text = str(self.temperature_limits['max']))
+					self.label_current_min_limit_reading.configure(text = str(self.temperature_limits['min']))
 					self.entry_simple_ramp_end_temp.delete(0, "end")
 					self.entry_simple_ramp_end_temp.insert(0, str(self.temperature_limits['min']))
 					self.entry_simple_ramp_start_temp.delete(0, "end")
@@ -187,6 +187,15 @@ class FrontEnd():
 						self.entry_simple_ramp_start_temp.insert(0, str(self.temperature_limits['max']))
 					else:
 						self.entry_simple_ramp_start_temp.insert(0, "0.0")
+				elif most_recent_message[1] == 'Set_temp_control_coeffs':
+					self.entry_P.delete(0, "end")
+					# ~self.entry_I.delete(0, "end")
+					self.entry_D.delete(0, "end")
+					self.entry_power_multiplier.delete(0, "end")
+					self.entry_P.insert(0, most_recent_message[2])
+					# ~self.entry_I.insert(0, most_recent_message[3])
+					self.entry_D.insert(0, most_recent_message[4])
+					self.entry_power_multiplier.insert(0, most_recent_message[5])
 				elif most_recent_message[1] == 'Set_logging_label':
 					self.label_logging_reading.configure(text = most_recent_message[2])
 				elif most_recent_message[1] == 'All_shutdown_confirm':
@@ -1065,7 +1074,7 @@ class FrontEnd():
 		self.label_P.pack(side="left", pady = (5, 0), expand="false")
 		self.entry_P = tkinter.ttk.Entry(self.P_coefficient_frame)
 		self.entry_P.pack(side="right", pady = (5, 0), expand="false")
-		self.entry_P.insert(0, self.device_parameter_defaults['pid_coefficients'][self.channel_id]['P'])
+		self.entry_P.insert(0, self.device_parameter_defaults['default_pid_coefficients'][self.channel_id]['P'])
 		
 		# ~self.I_coefficient_frame = tkinter.ttk.Frame(self.control_config_frame, borderwidth = 1)
 		# ~self.I_coefficient_frame.pack(side = "top", expand = "false", fill = tk.X)
@@ -1073,7 +1082,7 @@ class FrontEnd():
 		# ~self.label_I.pack(side="left", pady = (5, 0), expand="false")
 		# ~self.entry_I = tkinter.ttk.Entry(self.I_coefficient_frame)
 		# ~self.entry_I.pack(side="right", pady = (5, 0), expand="false")
-		# ~self.entry_I.insert(0, self.device_parameter_defaults['pid_coefficients'][self.channel_id]['I'])
+		# ~self.entry_I.insert(0, self.device_parameter_defaults['default_pid_coefficients'][self.channel_id]['I'])
 		
 		self.D_coefficient_frame = tkinter.ttk.Frame(self.control_config_frame, borderwidth = 1)
 		self.D_coefficient_frame.pack(side = "top", expand = "false", fill = tk.X)
@@ -1081,7 +1090,7 @@ class FrontEnd():
 		self.label_D.pack(side="left", pady = (5, 0), expand="false")
 		self.entry_D = tkinter.ttk.Entry(self.D_coefficient_frame)
 		self.entry_D.pack(side="right", pady = (5, 0), expand="false")
-		self.entry_D.insert(0, self.device_parameter_defaults['pid_coefficients'][self.channel_id]['D'])
+		self.entry_D.insert(0, self.device_parameter_defaults['default_pid_coefficients'][self.channel_id]['D'])
 		
 		self.power_multiplier_frame = tkinter.ttk.Frame(self.control_config_frame, borderwidth = 1)
 		self.power_multiplier_frame.pack(side = "top", expand = "false", fill = tk.X)
@@ -1089,7 +1098,7 @@ class FrontEnd():
 		self.label_power_multiplier.pack(side="left", pady = (5, 0), expand="false")
 		self.entry_power_multiplier = tkinter.ttk.Entry(self.power_multiplier_frame)
 		self.entry_power_multiplier.pack(side="right", pady = (5, 0), expand="false")
-		self.entry_power_multiplier.insert(0, self.device_parameter_defaults['pid_coefficients'][self.channel_id]['power_multiplier'])
+		self.entry_power_multiplier.insert(0, self.device_parameter_defaults['default_pid_coefficients'][self.channel_id]['power_multiplier'])
 		
 		self.button_apply_control = tkinter.ttk.Button(self.control_config_frame, text="Apply new settings", command=self.PIDConfig)
 		self.button_apply_control.pack(side = "top", pady = (5, 0), expand = "false", fill = tk.X)

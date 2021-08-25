@@ -11,7 +11,7 @@
 ########################################################################
 
 	This file is part of Cold Stage 4.
-	PRE RELEASE 3.4
+	PRE RELEASE 3.5
 
 	Cold Stage 4 is free software: you can redistribute it and/or 
 	modify it under the terms of the GNU General Public License as 
@@ -72,7 +72,8 @@ class CoolerControl():
 			'log_video_split_flag' : [0, 0, 0, 0],
 			#	Control
 			'drive_mode' : [2, 2, 2, 2],
-			'pid_coefficients': [{'P' : 3.0, 'I': 0.0, 'D': 9.0, 'power_multiplier': 1.0}, {'P' : 0.4, 'I': 0.0, 'D': 2.1, 'power_multiplier': 1.0}, {'P' : 0.4, 'I': 0.0, 'D': 2.1, 'power_multiplier': 1.0}, {'P' : 0.4, 'I': 0.0, 'D': 2.1, 'power_multiplier': 1.0}],
+			'default_pid_coefficients': [{'P' : 0.0, 'I': 0.0, 'D': 0.0, 'power_multiplier': 1.0}, {'P' : 0.0, 'I': 0.0, 'D': 0.0, 'power_multiplier': 1.0}, {'P' : 0.0, 'I': 0.0, 'D': 0.0, 'power_multiplier': 1.0}, {'P' : 0.0, 'I': 0.0, 'D': 0.0, 'power_multiplier': 1.0}],
+			'user_pid_coefficients_filepath': ['./calibrations/*/channel_' + str(i) + '/user_pid_coefficients.csv' for i in range(4)],
 			'max_temperature_limit': [30.0, 30.0, 30.0, 30.0],
 			'min_temperature_limit': [-45.0, -45.0, -45.0, -45.0],
 			'overload_fault_threshold_seconds': 10.0,
@@ -113,11 +114,13 @@ class CoolerControl():
 			elif self.num_channels > 4:
 				self.num_channels = 4
 			
+			# Replace wildcards (*) in the default paths with unique device identifier.
 			self.device_parameter_defaults['prt_calibration_coeffs_filepath'] = [self.device_parameter_defaults['prt_calibration_coeffs_filepath'][i].split('*')[0] + str(self.comms_unique_id) + self.device_parameter_defaults['prt_calibration_coeffs_filepath'][i].split('*')[1] for i in range(self.num_channels)]
 			self.device_parameter_defaults['tc_calibration_temp_data_filepath'] = [self.device_parameter_defaults['tc_calibration_temp_data_filepath'][i].split('*')[0] + str(self.comms_unique_id) + self.device_parameter_defaults['tc_calibration_temp_data_filepath'][i].split('*')[1] for i in range(self.num_channels)]
 			self.device_parameter_defaults['tc_calibration_final_data_filepath'] = [self.device_parameter_defaults['tc_calibration_final_data_filepath'][i].split('*')[0] + str(self.comms_unique_id) + self.device_parameter_defaults['tc_calibration_final_data_filepath'][i].split('*')[1] for i in range(self.num_channels)]
 			self.device_parameter_defaults['tc_calibration_coeffs_filepath'] = [self.device_parameter_defaults['tc_calibration_coeffs_filepath'][i].split('*')[0] + str(self.comms_unique_id) + self.device_parameter_defaults['tc_calibration_coeffs_filepath'][i].split('*')[1] for i in range(self.num_channels)]
 			self.device_parameter_defaults['calibrated_temp_limits_filepath'] = [self.device_parameter_defaults['calibrated_temp_limits_filepath'][i].split('*')[0] + str(self.comms_unique_id) + self.device_parameter_defaults['calibrated_temp_limits_filepath'][i].split('*')[1] for i in range(self.num_channels)]
+			self.device_parameter_defaults['user_pid_coefficients_filepath'] = [self.device_parameter_defaults['user_pid_coefficients_filepath'][i].split('*')[0] + str(self.comms_unique_id) + self.device_parameter_defaults['user_pid_coefficients_filepath'][i].split('*')[1] for i in range(self.num_channels)]
 			self.simulation_flag = (self.comms_port == 'none')
 			
 			# Create a root tkinter window, and then hide it.

@@ -7,7 +7,7 @@
 ########################################################################
 
 	This file is part of Cold Stage 4.
-	PRE RELEASE 3.4
+	PRE RELEASE 3.5
 
 	Cold Stage 4 is free software: you can redistribute it and/or 
 	modify it under the terms of the GNU General Public License as 
@@ -73,12 +73,15 @@ class PIDController():
 	def __init__(self, device_parameter_defaults, time_step, pid_coeffs, drive_mode):
 		self.device_parameter_defaults = device_parameter_defaults
 		self.time_step = float(time_step)
+		self.drive_mode = drive_mode
+		self.SetCoeffs(pid_coeffs)
+
+	def SetCoeffs(self, pid_coeffs):
 		self.P = pid_coeffs['P']
 		self.I = pid_coeffs['I']
 		self.D = pid_coeffs['D']
 		self.power_multiplier = pid_coeffs['power_multiplier']
-		self.drive_mode = drive_mode
-
+	
 	def Initialise(self, current_temp, setpoint):
 		self.current_temp = current_temp
 		self.setpoint = setpoint

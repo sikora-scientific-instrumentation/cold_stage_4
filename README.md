@@ -1,6 +1,6 @@
-Cold Stage 4 - PRE-RELEASE 3.4
+Cold Stage 4 - PRE-RELEASE 3.5
 ------------------------------
-Updated 20/08/2021.
+Updated 25/08/2021.
 
 A software program for the control of a solid-state experimental temperature control platform.
 

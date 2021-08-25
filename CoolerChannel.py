@@ -7,7 +7,7 @@
 ########################################################################
 
 	This file is part of Cold Stage 4.
-	PRE RELEASE 3.4
+	PRE RELEASE 3.5
 
 	Cold Stage 4 is free software: you can redistribute it and/or 
 	modify it under the terms of the GNU General Public License as 
@@ -73,14 +73,16 @@ class CoolerChannel():
 		self.setpoint = 'NA'
 		self.throttle_setting = 0.0
 		self.temperature_limits = {'max': self.device_parameter_defaults['max_temperature_limit'][self.channel_id], 'min': self.device_parameter_defaults['min_temperature_limit'][self.channel_id]}
-		self.overload_fault_flags = {'suspected': False, 'start_time': 0.0, 'confirmed': False}
-		#~self.temperature_rates = {'old_1st_derivative': 0.0, '1st_derivative': 0.0, '2nd_derivative': 0.0}
+		# ~self.overload_fault_flags = {'suspected': False, 'start_time': 0.0, 'confirmed': False}
+		# ~self.temperature_rates = {'old_1st_derivative': 0.0, '1st_derivative': 0.0, '2nd_derivative': 0.0}
 		
 		# Load the prt and thermocouple calibration coefficients.
 		self.prt_calibration_coeffs = self.LoadCalibration('Channel ' + str(self.channel_id) + ' internal PRT', self.device_parameter_defaults['prt_calibration_coeffs_filepath'][self.channel_id])
 		self.EnableTCCalibration()
-		self.LoadTempLimits()
 		self.calibration_limit = None
+		# Load the calibrated temperature limits and user-configured temperature control coefficients.
+		self.LoadTempLimits()
+		self.LoadControlCoeffs()
 		
 		if self.backend_object.comms_success_flag == True:
 			# Get channel temperature upon instantiation:
@@ -287,10 +289,12 @@ class CoolerChannel():
 		elif most_recent_message[0] == 'Ramp':
 			self.SwitchToRampMode(profile_repeats = most_recent_message[1], log_end_on_profile_end = most_recent_message[2], profile_path = most_recent_message[3], profile_table = most_recent_message[4])
 		elif most_recent_message[0] == 'PIDConfig':
-			self.pd.P = float(most_recent_message[1])
-			self.pd.I = float(most_recent_message[2])
-			self.pd.D = float(most_recent_message[3])
-			self.pd.power_multiplier = float(most_recent_message[4])
+			self.pid_coeffs['P'] = float(most_recent_message[1])
+			self.pid_coeffs['I'] = float(most_recent_message[2])
+			self.pid_coeffs['D'] = float(most_recent_message[3])
+			self.pid_coeffs['power_multiplier'] = float(most_recent_message[4])
+			self.pd.SetCoeffs(self.pid_coeffs)
+			self.StoreControlCoeffs()
 		elif most_recent_message[0] == 'LoggingRate':
 			self.logging_rate = float(most_recent_message[1])
 		elif most_recent_message[0] == 'StartLogging':
@@ -439,16 +443,44 @@ class CoolerChannel():
 				calibrated_min_temp_limit = float(temp_limit_file.readline())
 			self.temperature_limits['max'] = calibrated_max_temp_limit
 			self.temperature_limits['min'] = calibrated_min_temp_limit
+			# ~print('    Max = ' + '{:0.2f}'.format(calibrated_max_temp_limit) + ' °C')
+			# ~print('    Min = ' + '{:0.2f}'.format(calibrated_min_temp_limit) + ' °C')
+			self.mq_back_to_front.put((2, 'Set_temp_limits', '{:0.2f}'.format(self.temperature_limits['max']), '{:0.2f}'.format(self.temperature_limits['min'])))
 			print('Calibrated temperature limits found:')
-			print('    Max = ' + '{:0.2f}'.format(calibrated_max_temp_limit) + ' °C')
-			print('    Min = ' + '{:0.2f}'.format(calibrated_min_temp_limit) + ' °C')
-			self.mq_back_to_front.put((2, 'Set_temp_limits', '{:0.2f}'.format(calibrated_max_temp_limit), '{:0.2f}'.format(calibrated_min_temp_limit)))
 		else:
 			print('No calibrated minimum temperature limits found, defaulting to:')
-			print('    Max = ' + str(self.temperature_limits['max']) + ' °C')
-			print('    Min = ' + str(self.temperature_limits['min']) + ' °C')
-		print("--------------------------------------------------------------------------------")
-	
+		print('    Max = ' + str(self.temperature_limits['max']) + ' °C')
+		print('    Min = ' + str(self.temperature_limits['min']) + ' °C')
+		print("-----------------------------------------------------------------------------------")
+
+	def LoadControlCoeffs(self):
+		print("-----------------------------------------------------------------------------------")
+		print('Loading temperature control coefficients...')
+		file_exists = os.path.isfile(self.device_parameter_defaults['user_pid_coefficients_filepath'][self.channel_id])
+		if file_exists:
+			with open(self.device_parameter_defaults['user_pid_coefficients_filepath'][self.channel_id], 'r') as pid_coefficients_file:
+				self.pid_coeffs['P'] = float(pid_coefficients_file.readline())
+				self.pid_coeffs['I'] = float(pid_coefficients_file.readline())
+				self.pid_coeffs['D'] = float(pid_coefficients_file.readline())
+				self.pid_coeffs['power_multiplier'] = float(pid_coefficients_file.readline())
+			self.mq_back_to_front.put((2, 'Set_temp_control_coeffs', str(self.pid_coeffs['P']), str(self.pid_coeffs['I']), str(self.pid_coeffs['D']), str(self.pid_coeffs['power_multiplier'])))
+			print('User configured temperature control coefficients found:')
+		else:
+			print('No calibrated minimum temperature limits found, defaulting to:')
+		print('    P = ' + str(self.pid_coeffs['P']))
+		print('    I = ' + str(self.pid_coeffs['I']))
+		print('    D = ' + str(self.pid_coeffs['D']))
+		print('    Power multiplier = ' + str(self.pid_coeffs['power_multiplier']))
+		print("-----------------------------------------------------------------------------------")
+
+	def StoreControlCoeffs(self):
+		print('Storing control coefficients...')
+		with open(self.device_parameter_defaults['user_pid_coefficients_filepath'][self.channel_id], 'w') as pid_coefficients_file:
+			pid_coefficients_file.write(str(self.pid_coeffs['P']) + '\n')
+			pid_coefficients_file.write(str(self.pid_coeffs['I']) + '\n')
+			pid_coefficients_file.write(str(self.pid_coeffs['D']) + '\n')
+			pid_coefficients_file.write(str(self.pid_coeffs['power_multiplier']) + '\n')
+		
 	def DisableTempLimits(self):
 		hard_max_limit = self.device_parameter_defaults['max_temperature_limit'][self.channel_id]
 		hard_min_limit = self.device_parameter_defaults['min_temperature_limit'][self.channel_id]
